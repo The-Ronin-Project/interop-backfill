@@ -1,0 +1,13 @@
+name: Upgrade Dependencies
+on:
+  schedule:
+    - cron: "35 4 * * 0,4"
+  workflow_dispatch:
+
+jobs:
+  version-catalog-update:
+    name: Update Version Catalog
+    uses: projectronin/github/.github/workflows/version_catalog_update.yaml@version_catalog_update/v1
+    with:
+      assignees: "arssycro"
+    secrets: inherit

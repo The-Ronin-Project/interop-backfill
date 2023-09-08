@@ -1,3 +1,8 @@
 package com.projectronin.interop.backfill.client
 
-class BackfillClient
+class BackfillClient {
+
+    fun isTrue(): Boolean {
+        return true
+    }
+}

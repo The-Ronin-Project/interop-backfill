@@ -4,18 +4,45 @@ codecov:
 coverage:
   status:
     project:
-
-
+      client:
+        target: auto
+        threshold: 1%
+        flags:
+          - client
+      server:
+        target: auto
+        threshold: 1%
+        flags:
+          - server
     patch:
-
-
-flags:
+      client:
+        target: 80
+        threshold: 1%
+        base: auto
+        flags:
+          - client
+      server:
+        target: 80
+        threshold: 1%
+        base: auto
+        flags:
+          - server
 
 comment:
   layout: "reach, diff, flags, files"
   behavior: default
   require_changes: false
-  require_base: no
-  require_head: yes
-  branches: null
+  require_base: false
+  require_head: true
+  branches: [ ]
   show_carryforward_flags: false
+
+flags:
+  client:
+    paths:
+      - interop-backfill-client/
+    carryforward: true
+  server:
+    paths:
+      - interop-backfill-server/
+    carryforward: true
