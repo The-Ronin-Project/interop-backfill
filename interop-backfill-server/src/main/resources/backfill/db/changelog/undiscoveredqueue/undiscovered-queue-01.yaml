@@ -1,0 +1,41 @@
+databaseChangeLog:
+  - changeSet:
+      id: undiscovered-queue-create
+      author: Sam Felt
+      preConditions:
+        - onFail: MARK_RAN
+          not:
+            - tableExists:
+                tableName: undiscovered_queue
+      changes:
+        - createTable:
+            tableName: undiscovered_queue
+            columns:
+              - column:
+                  name: backfill_id
+                  type: BINARY(16)
+                  constraints:
+                    nullable: false
+                    references: backfill(backfill_id)
+                    foreignKeyName: fk_undiscovered_queue_backfill
+              - column:
+                  name: entry_id
+                  type: BINARY(16)
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_undiscovered_queue_id
+              - column:
+                  name: location_id
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: VARCHAR(12)
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: undiscovered_queue
+            columnNames: backfill_id, location_id
+            constraintName: uk_undiscovered_location_id_backfill_id

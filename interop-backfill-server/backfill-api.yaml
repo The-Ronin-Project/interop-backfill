@@ -1,0 +1,34 @@
+openapi: 3.0.0
+info:
+  title: Backfill Service
+  description: The Backfill service handles API request large backfill requests for a tenant
+  version: 1.0.0
+
+paths:
+  /fake:
+    get:
+      responses:
+        '200':
+          description: Successfully returned a fake so Open API Generator plugin works
+
+components:
+  schemas:
+    # Common schemas useful for other schemas and parameters.
+    BackfillStatus:
+      type: string
+      enum:
+        - NOT_STARTED
+        - STARTED
+        - COMPLETED
+      description: The status of a backfill patient entry
+    UndiscoveredQueueStatus:
+      type: string
+      enum:
+        - UNDISCOVERED
+        - DISCOVERED
+      description: The status of the a request for a backfill
+    Id:
+      type: string
+      format: uuid
+      description: The opaque ID for this object.
+      example: 123e4567-e89b-12d3-a456-426614174000

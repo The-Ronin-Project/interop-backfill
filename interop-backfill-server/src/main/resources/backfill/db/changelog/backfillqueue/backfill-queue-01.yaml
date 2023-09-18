@@ -1,0 +1,41 @@
+databaseChangeLog:
+  - changeSet:
+      id: backfill-queue-create
+      author: Sam Felt
+      preConditions:
+        - onFail: MARK_RAN
+          not:
+            - tableExists:
+                tableName: backfill_queue
+      changes:
+        - createTable:
+            tableName: backfill_queue
+            columns:
+              - column:
+                  name: entry_id
+                  type: BINARY(16)
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_backfill_queue_id
+              - column:
+                  name: backfill_id
+                  type: BINARY(16)
+                  constraints:
+                    nullable: false
+                    references: backfill(backfill_id)
+                    foreignKeyName: fk_backfill_queue_backfill
+              - column:
+                  name: patient_id
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: VARCHAR(12)
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: backfill_queue
+            columnNames: backfill_id, patient_id
+            constraintName: uk_backfill_queue_patient_id_backfill_id

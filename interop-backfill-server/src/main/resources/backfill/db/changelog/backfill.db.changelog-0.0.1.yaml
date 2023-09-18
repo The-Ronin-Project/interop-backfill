@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - include:
+      file: backfill/db/changelog/backfill/backfill-01.yaml
+  - include:
+      file: backfill/db/changelog/backfillqueue/backfill-queue-01.yaml
+  - include:
+      file: backfill/db/changelog/undiscoveredqueue/undiscovered-queue-01.yaml

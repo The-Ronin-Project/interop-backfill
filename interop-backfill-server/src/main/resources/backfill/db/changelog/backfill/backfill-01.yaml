@@ -1,0 +1,40 @@
+databaseChangeLog:
+  - changeSet:
+      id: backfill-create
+      author: Sam Felt
+      preConditions:
+        - onFail: MARK_RAN
+          not:
+            - tableExists:
+                tableName: backfill
+      changes:
+        - createTable:
+            tableName: backfill
+            columns:
+              - column:
+                  name: backfill_id
+                  # This is stored as a BINARY as an optimization for storing UUIDs.
+                  type: BINARY(16)
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+                    primaryKeyName: pk_backfill_id
+              - column:
+                  name: tenant_id
+                  type: VARCHAR(8)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: start_dt
+                  type: DATE(6)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: end_dt
+                  type: DATE(6)
+                  constraints:
+                    nullable: false
+        - addUniqueConstraint:
+            tableName: backfill
+            columnNames: backfill_id, tenant_id
+            constraintName: uk_backfill_tenant_backfill_id
