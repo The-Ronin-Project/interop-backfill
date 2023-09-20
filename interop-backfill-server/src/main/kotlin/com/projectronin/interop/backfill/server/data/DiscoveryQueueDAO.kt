@@ -1,9 +1,9 @@
 package com.projectronin.interop.backfill.server.data
 
 import com.projectronin.interop.backfill.server.data.binding.BackfillDOs
-import com.projectronin.interop.backfill.server.data.binding.UndiscoveredQueueDOs
-import com.projectronin.interop.backfill.server.data.model.UndiscoveredQueueDO
-import com.projectronin.interop.backfill.server.generated.models.UndiscoveredQueueStatus
+import com.projectronin.interop.backfill.server.data.binding.DiscoveryQueueDOs
+import com.projectronin.interop.backfill.server.data.model.DiscoveryQueueDO
+import com.projectronin.interop.backfill.server.generated.models.DiscoveryQueueStatus
 import com.projectronin.interop.common.ktorm.dao.BaseInteropDAO
 import com.projectronin.interop.common.ktorm.valueLookup
 import org.ktorm.database.Database
@@ -21,32 +21,32 @@ import org.springframework.stereotype.Repository
 import java.util.UUID
 
 @Repository
-class UndiscoveredQueueDAO(database: Database) : BaseInteropDAO<UndiscoveredQueueDO, UUID>(database) {
-    override val primaryKeyColumn = UndiscoveredQueueDOs.entryId
+class DiscoveryQueueDAO(database: Database) : BaseInteropDAO<DiscoveryQueueDO, UUID>(database) {
+    override val primaryKeyColumn = DiscoveryQueueDOs.entryId
 
-    fun getByBackfillID(backfillId: UUID): List<UndiscoveredQueueDO> {
-        return database.valueLookup(backfillId, UndiscoveredQueueDOs.backfillId)
+    fun getByBackfillID(backfillId: UUID): List<DiscoveryQueueDO> {
+        return database.valueLookup(backfillId, DiscoveryQueueDOs.backfillId)
     }
 
-    fun getByTenant(tenant: String, status: UndiscoveredQueueStatus? = null): List<UndiscoveredQueueDO> {
+    fun getByTenant(tenant: String, status: DiscoveryQueueStatus? = null): List<DiscoveryQueueDO> {
         logger.debug { "Searching for UndiscoveredQueue Entries for organization $tenant" }
         status?.let { logger.debug { "with status $status" } }
-        return database.from(UndiscoveredQueueDOs)
-            .leftJoin(BackfillDOs, on = UndiscoveredQueueDOs.backfillId eq BackfillDOs.id)
+        return database.from(DiscoveryQueueDOs)
+            .leftJoin(BackfillDOs, on = DiscoveryQueueDOs.backfillId eq BackfillDOs.id)
             .joinReferencesAndSelect()
             .where {
                 val conditions = mutableListOf<ColumnDeclaring<Boolean>>()
                 conditions += BackfillDOs.tenantId eq tenant
-                status?.let { conditions += UndiscoveredQueueDOs.status eq status }
+                status?.let { conditions += DiscoveryQueueDOs.status eq status }
                 conditions.reduce { a, b -> a and b }
             }
-            .map { UndiscoveredQueueDOs.createEntity(it) }
+            .map { DiscoveryQueueDOs.createEntity(it) }
     }
 
-    fun insert(undiscoveredQueue: UndiscoveredQueueDO): UUID? {
+    fun insert(undiscoveredQueue: DiscoveryQueueDO): UUID? {
         val newUUID = UUID.randomUUID()
         logger.info { "Inserting undiscoveredQueue for backfill ${undiscoveredQueue.backfillId} with UUID $newUUID" }
-        database.insert(UndiscoveredQueueDOs) {
+        database.insert(DiscoveryQueueDOs) {
             set(it.backfillId, undiscoveredQueue.backfillId)
             set(it.entryId, newUUID)
             set(it.locationId, undiscoveredQueue.locationId)
@@ -55,9 +55,9 @@ class UndiscoveredQueueDAO(database: Database) : BaseInteropDAO<UndiscoveredQueu
         return newUUID
     }
 
-    fun updateStatus(entryID: UUID, status: UndiscoveredQueueStatus) {
+    fun updateStatus(entryID: UUID, status: DiscoveryQueueStatus) {
         logger.info { "updating undiscoveredQueue $entryID with status $status" }
-        database.update(UndiscoveredQueueDOs) {
+        database.update(DiscoveryQueueDOs) {
             set(it.status, status)
             where { it.entryId eq entryID }
         }

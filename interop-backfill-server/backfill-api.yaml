@@ -1,16 +1,313 @@
 openapi: 3.0.0
 info:
   title: Backfill Service
-  description: The Backfill service handles API request large backfill requests for a tenant
+  description: >
+    The Backfill service handles API request large backfill requests for a tenant.
+    
+    There are three major endpoints. One for adding and retrieving basic information about a backfill, `/backfill`.
+    The second, discovery-queue, is meant for Mirth to read and write, turning a list of locations 
+    into a list of patients. Those patients are added to the final endpoint, the queue. The queue is also 
+    meant for Mirth to call, so that individual patient information can be retrieved.
   version: 1.0.0
 
 paths:
-  /fake:
-    get:
+  /backfill:
+    post:
+      tags:
+        - backfill
+      operationId: postBackfill
+      security:
+        - auth0:
+            - create:backfill
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewBackfill'
       responses:
         '200':
-          description: Successfully returned a fake so Open API Generator plugin works
-
+          description: Successfully created a new backfill request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GeneratedId'
+    get:
+      tags:
+        - backfill
+      operationId: getBackfill
+      security:
+        - auth0:
+            - read:backfill
+      parameters:
+        - name: tenant_id
+          in: query
+          description: The ID of the tenant for which to return backfills
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully returned a list of backfill requests.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Backfill'
+  /backfill/{backfillId}:
+    get:
+      tags:
+        - backfill
+      operationId: getBackfillById
+      security:
+        - auth0:
+            - read:backfill
+      parameters:
+        - $ref: '#/components/parameters/BackfillId'
+      responses:
+        '200':
+          description: Successfully returned a Backfill.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Backfill'
+    delete:
+      tags:
+        - backfill
+      operationId: deleteBackfillById
+      security:
+        - auth0:
+            - delete:backfill
+      parameters:
+        - $ref: '#/components/parameters/BackfillId'
+      responses:
+        '200':
+          description: Successfully deleted a backfill and all queue entries
+          content:
+            application/json:
+              schema:
+                type: boolean
+  /discovery-queue:
+    get:
+      tags:
+        - discoveryQueue
+      operationId: getDiscoveryQueueEntries
+      security:
+        - auth0:
+            - read:discovery
+      parameters:
+        - name: tenant_id
+          in: query
+          required: true
+          description: The ID of the tenant for which to return Discovery queue entries
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: Filter by status, defaults to Discovery
+          schema:
+            $ref: '#/components/schemas/DiscoveryQueueStatus'
+        - name: backfillId
+          in: query
+          description: defaults to all
+          schema:
+            $ref: '#/components/schemas/Id'
+      responses:
+        '200':
+          description: Successfully returned a list of DiscoveryEntries.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DiscoveryQueueEntry'
+  /discovery-queue/{discoveryQueueId}:
+    get:
+      tags:
+        - discoveryQueue
+      operationId: getDiscoveryQueueEntry
+      security:
+        - auth0:
+            - read:discovery
+      parameters:
+        - $ref: '#/components/parameters/DiscoveryQueueId'
+      responses:
+        '200':
+          description: Successfully returned an entry.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DiscoveryQueueEntry'
+    patch:
+      tags:
+        - discoveryQueue
+      operationId: updateDiscoveryByID
+      security:
+        - auth0:
+            - update:discovery
+      parameters:
+        - $ref: '#/components/parameters/DiscoveryQueueId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDiscoveryEntry'
+      responses:
+        '200':
+          description: Successfully patched a queue entry
+          content:
+            application/json:
+              schema:
+                type: boolean
+    delete:
+      tags:
+        - discoveryQueue
+      operationId: deleteDiscoveryQueueIdById
+      security:
+        - auth0:
+            - delete:discovery
+      parameters:
+        - $ref: '#/components/parameters/DiscoveryQueueId'
+      responses:
+        '200':
+          description: Successfully deleted a queue entry
+          content:
+            application/json:
+              schema:
+                type: boolean
+  /queue:
+    get:
+      tags:
+        - queue
+      operationId: getQueueEntries
+      security:
+        - auth0:
+            - read:queue
+      parameters:
+        - name: tenant_id
+          in: query
+          required: true
+          description: The ID of the organization for which to return Discovery entries
+          schema:
+            type: string
+        - name: status
+          in: query
+          description: Status, defaults to Discovery
+          schema:
+            $ref: '#/components/schemas/BackfillStatus'
+        - name: backfillId
+          in: query
+          description: defaults to all
+          schema:
+            $ref: '#/components/schemas/Id'
+      responses:
+        '200':
+          description: Successfully returned a list of QueueEntries.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/QueueEntry'
+  /queue/backfill/{backfillId}:
+    post:
+      tags:
+        - queue
+      operationId: postQueueEntry
+      security:
+        - auth0:
+            - write:queue
+      parameters:
+        - $ref: '#/components/parameters/BackfillId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewQueueEntry'
+      responses:
+        '200':
+          description: Successfully returned an entry.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GeneratedId'
+    get:
+      tags:
+        - queue
+      operationId: getEntriesByBackfillID
+      security:
+        - auth0:
+            - get:queue
+      parameters:
+        - $ref: '#/components/parameters/BackfillId'
+      responses:
+        '200':
+          description: Successfully returned a list of QueueEntries.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/QueueEntry'
+  /queue/{queueId}:
+    get:
+      tags:
+        - queue
+      operationId: getQueuedEntry
+      security:
+        - auth0:
+            - read:queue
+      parameters:
+        - $ref: '#/components/parameters/QueueId'
+      responses:
+        '200':
+          description: Successfully returned an entry.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QueueEntry'
+    delete:
+      tags:
+        - queue
+      operationId: deleteEntryIdById
+      security:
+        - auth0:
+            - delete:queue
+      parameters:
+        - $ref: '#/components/parameters/QueueId'
+      responses:
+        '200':
+          description: Successfully deleted a queue entry
+          content:
+            application/json:
+              schema:
+                type: boolean
+    patch:
+      tags:
+        - queue
+      operationId: updateQueueByID
+      security:
+        - auth0:
+            - update:queue
+      parameters:
+        - $ref: '#/components/parameters/QueueId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateQueueEntry'
+      responses:
+        '200':
+          description: Successfully patched a queue entry
+          content:
+            application/json:
+              schema:
+                type: boolean
 components:
   schemas:
     # Common schemas useful for other schemas and parameters.
@@ -21,7 +318,7 @@ components:
         - STARTED
         - COMPLETED
       description: The status of a backfill patient entry
-    UndiscoveredQueueStatus:
+    DiscoveryQueueStatus:
       type: string
       enum:
         - UNDISCOVERED
@@ -32,3 +329,209 @@ components:
       format: uuid
       description: The opaque ID for this object.
       example: 123e4567-e89b-12d3-a456-426614174000
+    GeneratedId:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+    NewBackfill:
+      type: object
+      properties:
+        tenant_id:
+          type: string
+          description: The ID of the organization to for the backfill
+          example: 12345678
+        location_ids:
+          type: array
+          items:
+            type: string
+          description: The location ids for this backfill
+        start_date:
+          type: string
+          format: date
+          description: The earliest date data should be retrieved from
+        end_date:
+          type: string
+          format: date
+          description: The most recent date that data should be retrieved from
+      required:
+        - tenant_id
+        - location_ids
+        - start_date
+        - end_date
+    Backfill:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        tenant_id:
+          type: string
+          description: The ID of the organization to for the backfill
+          example: 12345678
+        location_ids:
+          type: array
+          items:
+            type: string
+          description: The location ids for this backfill
+        start_date:
+          type: string
+          format: date
+          description: The earliest date data should be retrieved from
+        end_date:
+          type: string
+          format: date
+          description: The most recent date that data should be retrieved from
+        status:
+          $ref: '#/components/schemas/BackfillStatus'
+        lastUpdated:
+          type: string
+          format: date-time
+          description: The last time any entry in this backfill was processed
+      required:
+        - id
+        - tenant_id
+        - location_ids
+        - start_date
+        - end_date
+    DiscoveryQueueEntry:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        backfillId:
+          $ref: '#/components/schemas/Id'
+        tenant_id:
+          type: string
+          description: The ID of the organization to for the backfill
+          example: 12345678
+        locationid:
+          type: string
+          description: The location ids for this backfill entrye
+        start_date:
+          type: string
+          format: date
+          description: The earliest date data should be retrieved from
+        end_date:
+          type: string
+          format: date
+          description: The most recent date that data should be retrieved from
+        status:
+          $ref: '#/components/schemas/DiscoveryQueueStatus'
+      required:
+        - id
+        - tenant_id
+        - location_ids
+        - start_date
+        - end_date
+    UpdateDiscoveryEntry:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/DiscoveryQueueStatus'
+          description: The status of the discovery queue entry.
+      required:
+        - status
+    NewQueueEntry:
+      type: object
+      properties:
+        backfillId:
+          $ref: '#/components/schemas/Id'
+        tenant_id:
+          type: string
+          description: The ID of the organization to for the backfill
+          example: 12345678
+        patientId:
+          type: string
+          description: The patient ids for this backfill entrye
+        start_date:
+          type: string
+          format: date
+          description: The earliest date data should be retrieved from
+        end_date:
+          type: string
+          format: date
+          description: The most recent date that data should be retrieved from
+        status:
+          $ref: '#/components/schemas/BackfillStatus'
+      required:
+        - id
+        - tenant_id
+        - location_ids
+        - start_date
+        - end_date
+    QueueEntry:
+      type: object
+      properties:
+        id:
+          $ref: '#/components/schemas/Id'
+        backfillId:
+          $ref: '#/components/schemas/Id'
+        tenant_id:
+          type: string
+          description: The ID of the organization to for the backfill
+          example: 12345678
+        patientId:
+          type: string
+          description: The patient ids for this backfill entry
+        start_date:
+          type: string
+          format: date
+          description: The earliest date data should be retrieved from
+        end_date:
+          type: string
+          format: date
+          description: The most recent date that data should be retrieved from
+        status:
+          $ref: '#/components/schemas/BackfillStatus'
+      required:
+        - id
+        - tenant_id
+        - location_ids
+        - start_date
+        - end_date
+    UpdateQueueEntry:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/BackfillStatus'
+          description: The status of the Discovery queue entry.
+      required:
+        - status
+  parameters:
+    BackfillId:
+      name: backfillId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    DiscoveryQueueId:
+      name: DiscoveryQueueId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    QueueId:
+      name: queueId
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+
+  securitySchemes:
+    auth0:
+      type: oauth2
+      description: Auth0-based OAuth2
+      flows:
+        clientCredentials:
+          tokenUrl: https://ronin-dev.auth0.com/authorize?audience=https://interop-backfill.dev.projectronin.io
+          scopes:
+            read:backfill: Read backfills
+            create:backfill: Create new backfills
+            delete:backfill: Delete backfill and backfill entries
+            read:discovery: Read Discovery queue entries
+            update:discovery: Update Discovery queue entries
+            delete:discovery: Update Discovery queue entries
+            read:queue: Read queue entries associated to a backfill
+            create:queue: Create queue entries associated to a backfill
+            update:queue: Update queue entries associated to a backfill
+            delete:queue: Update queue entries associated to a backfill
