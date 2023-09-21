@@ -6,14 +6,14 @@ interop-gradle = "3.2.0"
 # @pin until Spring Boot 3
 jakarta = "2.0.2"
 kotlinx-coroutines = "1.7.3"
-ktor = "2.3.3"
+ktor = "2.3.4"
 ktorm = "3.6.0"
-liquibase = "4.23.1"
+liquibase = "4.23.2"
 # @pin until Spring 6
 logstash = "7.3"
 mockk = "1.13.7"
 mysql = "8.0.33"
-openapi-generator = "7.0.0"
+openapi-generator = "7.0.1"
 # @pin until can move to JDK 17
 spring-boot = "2.7.13"
 springdoc = "1.7.0"
@@ -29,36 +29,28 @@ jakarta-validation-api = { module = "jakarta.validation:jakarta.validation-api",
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 ktor-client-auth = { module = "io.ktor:ktor-client-auth", version.ref = "ktor" }
 ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }
-ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negotiation", version.ref = "ktor" }
-ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
-ktor-client-logging = { module = "io.ktor:ktor-client-logging", version.ref = "ktor" }
 ktor-client-mock = { module = "io.ktor:ktor-client-mock", version.ref = "ktor" }
-ktor-serialization-jackson = { module = "io.ktor:ktor-serialization-jackson", version.ref = "ktor" }
 ktorm-core = { module = "org.ktorm:ktorm-core", version.ref = "ktorm" }
 ktorm-support-mysql = { module = "org.ktorm:ktorm-support-mysql", version.ref = "ktorm" }
 liquibase-core = { module = "org.liquibase:liquibase-core", version.ref = "liquibase" }
 logstash-logback-encoder = { module = "net.logstash.logback:logstash-logback-encoder", version.ref = "logstash" }
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 mysql-connector-java = { module = "mysql:mysql-connector-java", version.ref = "mysql" }
+rider-core = { module = "com.github.database-rider:rider-core", version.ref = "dbrider" }
 spring-boot-parent = { module = "org.springframework.boot:spring-boot-parent", version.ref = "spring-boot" }
 springdoc-openapi-ui = { module = "org.springdoc:springdoc-openapi-ui", version.ref = "springdoc" }
-rider-core = { module = "com.github.database-rider:rider-core", version.ref = "dbrider" }
 testcontainers-bom = { module = "org.testcontainers:testcontainers-bom", version.ref = "testcontainers" }
 
 [bundles]
 ktor = [
     "ktor-client-auth",
     "ktor-client-cio",
-    "ktor-client-content-negotiation",
-    "ktor-client-core",
-    "ktor-client-logging",
-    "ktor-serialization-jackson",
 ]
+
 [plugins]
 idea-ext = { id = "org.jetbrains.gradle.plugin.idea-ext", version.ref = "idea-ext" }
 interop-gradle-docker-integration = { id = "com.projectronin.interop.gradle.docker-integration", version.ref = "interop-gradle" }
 interop-gradle-junit = { id = "com.projectronin.interop.gradle.junit", version.ref = "interop-gradle" }
-interop-gradle-server-publish = { id = "com.projectronin.interop.gradle.server-publish", version.ref = "interop-gradle" }
 interop-gradle-server-version = { id = "com.projectronin.interop.gradle.server-version", version.ref = "interop-gradle" }
 interop-gradle-spring-boot = { id = "com.projectronin.interop.gradle.spring-boot", version.ref = "interop-gradle" }
 interop-gradle-spring-framework = { id = "com.projectronin.interop.gradle.spring", version.ref = "interop-gradle" }
