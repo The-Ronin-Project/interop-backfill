@@ -3,9 +3,11 @@ plugins {
 }
 
 dependencies {
+    api(enforcedPlatform(libs.kotlin.bom))
     implementation(platform(libs.spring.boot.parent))
     implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
     implementation("org.springframework.boot:spring-boot-starter-jdbc")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation(libs.springdoc.openapi.ui)
@@ -28,6 +30,7 @@ dependencies {
 
     testRuntimeOnly("org.testcontainers:mysql")
 
+    itImplementation(project(":interop-backfill-client"))
     itImplementation(project)
     itImplementation(platform(libs.testcontainers.bom))
     itImplementation("org.testcontainers:testcontainers")

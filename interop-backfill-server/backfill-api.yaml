@@ -26,7 +26,7 @@ paths:
             schema:
               $ref: '#/components/schemas/NewBackfill'
       responses:
-        '200':
+        '201':
           description: Successfully created a new backfill request
           content:
             application/json:
@@ -35,13 +35,14 @@ paths:
     get:
       tags:
         - backfill
-      operationId: getBackfill
+      operationId: getBackfills
       security:
         - auth0:
             - read:backfill
       parameters:
         - name: tenant_id
           in: query
+          required: true
           description: The ID of the tenant for which to return backfills
           schema:
             type: string
@@ -125,7 +126,7 @@ paths:
     get:
       tags:
         - discoveryQueue
-      operationId: getDiscoveryQueueEntry
+      operationId: getDiscoveryQueueEntryById
       security:
         - auth0:
             - read:discovery
@@ -141,7 +142,7 @@ paths:
     patch:
       tags:
         - discoveryQueue
-      operationId: updateDiscoveryByID
+      operationId: updateDiscoveryQueueEntryByID
       security:
         - auth0:
             - update:discovery
@@ -163,7 +164,7 @@ paths:
     delete:
       tags:
         - discoveryQueue
-      operationId: deleteDiscoveryQueueIdById
+      operationId: deleteDiscoveryQueueEntryById
       security:
         - auth0:
             - delete:discovery
@@ -181,6 +182,7 @@ paths:
       tags:
         - queue
       operationId: getQueueEntries
+      description: gets the next unprocessed entries in the queue if other entries have completed
       security:
         - auth0:
             - read:queue
@@ -188,19 +190,9 @@ paths:
         - name: tenant_id
           in: query
           required: true
-          description: The ID of the organization for which to return Discovery entries
+          description: The ID of the organization for which to return the next entry in the queue
           schema:
             type: string
-        - name: status
-          in: query
-          description: Status, defaults to Discovery
-          schema:
-            $ref: '#/components/schemas/BackfillStatus'
-        - name: backfillId
-          in: query
-          description: defaults to all
-          schema:
-            $ref: '#/components/schemas/Id'
       responses:
         '200':
           description: Successfully returned a list of QueueEntries.
@@ -225,7 +217,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/NewQueueEntry'
+              type: array
+              items:
+                $ref: '#/components/schemas/NewQueueEntry'
       responses:
         '200':
           description: Successfully returned an entry.
@@ -257,7 +251,7 @@ paths:
     get:
       tags:
         - queue
-      operationId: getQueuedEntry
+      operationId: getQueueEntryById
       security:
         - auth0:
             - read:queue
@@ -273,7 +267,7 @@ paths:
     delete:
       tags:
         - queue
-      operationId: deleteEntryIdById
+      operationId: deleteQueueEntryById
       security:
         - auth0:
             - delete:queue
@@ -289,7 +283,7 @@ paths:
     patch:
       tags:
         - queue
-      operationId: updateQueueByID
+      operationId: updateQueueEntryByID
       security:
         - auth0:
             - update:queue
@@ -317,12 +311,14 @@ components:
         - NOT_STARTED
         - STARTED
         - COMPLETED
+        - DELETED
       description: The status of a backfill patient entry
     DiscoveryQueueStatus:
       type: string
       enum:
         - UNDISCOVERED
         - DISCOVERED
+        - DELETED
       description: The status of the a request for a backfill
     Id:
       type: string
@@ -383,6 +379,7 @@ components:
           description: The most recent date that data should be retrieved from
         status:
           $ref: '#/components/schemas/BackfillStatus'
+          required: true
         lastUpdated:
           type: string
           format: date-time
@@ -436,29 +433,12 @@ components:
       properties:
         backfillId:
           $ref: '#/components/schemas/Id'
-        tenant_id:
-          type: string
-          description: The ID of the organization to for the backfill
-          example: 12345678
         patientId:
           type: string
           description: The patient ids for this backfill entrye
-        start_date:
-          type: string
-          format: date
-          description: The earliest date data should be retrieved from
-        end_date:
-          type: string
-          format: date
-          description: The most recent date that data should be retrieved from
-        status:
-          $ref: '#/components/schemas/BackfillStatus'
       required:
-        - id
-        - tenant_id
-        - location_ids
-        - start_date
-        - end_date
+        - backfillId
+        - patientId
     QueueEntry:
       type: object
       properties:
@@ -483,8 +463,13 @@ components:
           description: The most recent date that data should be retrieved from
         status:
           $ref: '#/components/schemas/BackfillStatus'
+        lastUpdated:
+          type: string
+          format: date-time
+          description: The last time any entry in this backfill was processed
       required:
         - id
+        - backfillId
         - tenant_id
         - location_ids
         - start_date
@@ -505,7 +490,7 @@ components:
       schema:
         $ref: '#/components/schemas/Id'
     DiscoveryQueueId:
-      name: DiscoveryQueueId
+      name: discoveryQueueId
       in: path
       required: true
       schema:

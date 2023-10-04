@@ -5,7 +5,9 @@ import com.projectronin.interop.backfill.server.data.model.BackfillDO
 import com.projectronin.interop.common.ktorm.dao.BaseInteropDAO
 import com.projectronin.interop.common.ktorm.valueLookup
 import org.ktorm.database.Database
+import org.ktorm.dsl.eq
 import org.ktorm.dsl.insert
+import org.ktorm.dsl.update
 import org.springframework.stereotype.Repository
 import java.util.UUID
 
@@ -29,5 +31,12 @@ class BackfillDAO(database: Database) : BaseInteropDAO<BackfillDO, UUID>(databas
 
         logger.info { "Backfill $newUUID inserted" }
         return newUUID
+    }
+
+    fun delete(backfillId: UUID) {
+        database.update(BackfillDOs) {
+            set(it.isDeleted, true)
+            where { it.id eq backfillId }
+        }
     }
 }

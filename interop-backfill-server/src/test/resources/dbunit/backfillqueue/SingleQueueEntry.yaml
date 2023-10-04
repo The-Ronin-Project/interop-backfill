@@ -4,6 +4,7 @@ backfill:
     tenant_id: "tenant1"
     start_dt: "2022-08-01"
     end_dt: "2023-09-01"
+    is_deleted: "false"
 
 backfill_queue:
   - backfill_id: "tOjoCil6Sxm9WUuActucxA=="
@@ -11,3 +12,4 @@ backfill_queue:
     # UUID: 981d2048-eb49-4bfd-ba96-8291288641c3
     patient_id: "123"
     status: "NOT_STARTED"
+    update_dt_tm: "2022-08-01 11:18:00 +0000"

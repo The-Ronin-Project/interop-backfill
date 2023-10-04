@@ -1,10 +1,12 @@
 [versions]
 dbrider = "1.39.0"
 idea-ext = "1.1.7"
-interop-common = "3.12.0"
+interop-common = "3.12.1"
 interop-gradle = "3.2.0"
 # @pin until Spring Boot 3
 jakarta = "2.0.2"
+# @keep for forcing version
+kotlin = "1.9.0"
 kotlinx-coroutines = "1.7.3"
 ktor = "2.3.4"
 ktorm = "3.6.0"
@@ -26,6 +28,8 @@ interop-commonJackson = { module = "com.projectronin.interop:interop-common-jack
 interop-commonKtorm = { module = "com.projectronin.interop:interop-common-ktorm", version.ref = "interop-common" }
 interop-commonTestDb = { module = "com.projectronin.interop:interop-common-test-db", version.ref = "interop-common" }
 jakarta-validation-api = { module = "jakarta.validation:jakarta.validation-api", version.ref = "jakarta" }
+# @keep to force version
+kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "kotlinx-coroutines" }
 ktor-client-auth = { module = "io.ktor:ktor-client-auth", version.ref = "ktor" }
 ktor-client-cio = { module = "io.ktor:ktor-client-cio", version.ref = "ktor" }

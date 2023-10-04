@@ -9,4 +9,5 @@ interface BackfillDO : Entity<BackfillDO> {
     var tenantId: String
     var startDate: LocalDate
     var endDate: LocalDate
+    var isDeleted: Boolean
 }

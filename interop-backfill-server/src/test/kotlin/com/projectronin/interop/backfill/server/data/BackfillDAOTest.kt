@@ -66,4 +66,12 @@ class BackfillDAOTest {
         val uuid = dao.insert(newBackfill)
         assertNotNull(uuid)
     }
+
+    @Test
+    @DataSet(value = ["/dbunit/BaseBackfill.yaml"], cleanAfter = true)
+    @ExpectedDataSet(value = ["/dbunit/backfill/Deleted.yaml"])
+    fun `delete works`() {
+        val dao = BackfillDAO(KtormHelper.database())
+        dao.delete(UUID.fromString("b4e8e80a-297a-4b19-bd59-4b8072db9cc4"))
+    }
 }

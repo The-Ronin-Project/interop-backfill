@@ -22,7 +22,7 @@ class BackfillQueueDAOTest {
 
     @Test
     @DataSet(value = ["/dbunit/BaseBackfill.yaml"], cleanAfter = true)
-    @ExpectedDataSet(value = ["/dbunit/backfillqueue/SingleQueueEntry.yaml"], ignoreCols = ["entry_id"])
+    @ExpectedDataSet(value = ["/dbunit/backfillqueue/SingleQueueEntry.yaml"], ignoreCols = ["entry_id", "update_dt_tm"])
     fun `insert works`() {
         val dao = BackfillQueueDAO(KtormHelper.database())
         val newEntry = BackfillQueueDO {
@@ -78,7 +78,7 @@ class BackfillQueueDAOTest {
 
     @Test
     @DataSet(value = ["/dbunit/backfillqueue/MultipleQueueEntries.yaml"], cleanAfter = true)
-    @ExpectedDataSet(value = ["/dbunit/backfillqueue/MultipleQueueEntriesAfterUpdate.yaml"], orderBy = ["backfill_id", "patient_id"])
+    @ExpectedDataSet(value = ["/dbunit/backfillqueue/MultipleQueueEntriesAfterUpdate.yaml"], orderBy = ["backfill_id", "patient_id"], ignoreCols = ["update_dt_tm"])
     fun `update works`() {
         val dao = BackfillQueueDAO(KtormHelper.database())
         dao.updateStatus(UUID.fromString("981d2048-eb49-4bfd-ba96-8291288641c3"), BackfillStatus.COMPLETED)

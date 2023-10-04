@@ -3,7 +3,11 @@ plugins {
 }
 
 dependencies {
+    implementation(platform(libs.spring.boot.parent))
+    // implementation(libs.spring.boot.actuator)
+
     implementation(libs.interop.common)
+    implementation(libs.interop.commonHttp)
     implementation(libs.interop.commonJackson)
     implementation(libs.jakarta.validation.api)
 

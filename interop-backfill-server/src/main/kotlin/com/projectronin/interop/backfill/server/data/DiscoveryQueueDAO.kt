@@ -10,6 +10,7 @@ import org.ktorm.database.Database
 import org.ktorm.dsl.and
 import org.ktorm.dsl.eq
 import org.ktorm.dsl.from
+import org.ktorm.dsl.inList
 import org.ktorm.dsl.insert
 import org.ktorm.dsl.joinReferencesAndSelect
 import org.ktorm.dsl.leftJoin
@@ -23,21 +24,26 @@ import java.util.UUID
 @Repository
 class DiscoveryQueueDAO(database: Database) : BaseInteropDAO<DiscoveryQueueDO, UUID>(database) {
     override val primaryKeyColumn = DiscoveryQueueDOs.entryId
-
     fun getByBackfillID(backfillId: UUID): List<DiscoveryQueueDO> {
         return database.valueLookup(backfillId, DiscoveryQueueDOs.backfillId)
     }
 
-    fun getByTenant(tenant: String, status: DiscoveryQueueStatus? = null): List<DiscoveryQueueDO> {
+    fun getByTenant(tenant: String, status: DiscoveryQueueStatus? = null, backfillId: UUID? = null): List<DiscoveryQueueDO> {
         logger.debug { "Searching for UndiscoveredQueue Entries for organization $tenant" }
         status?.let { logger.debug { "with status $status" } }
+        val statusList = if (status == null) {
+            listOf(DiscoveryQueueStatus.UNDISCOVERED, DiscoveryQueueStatus.DISCOVERED)
+        } else {
+            listOf(status)
+        }
         return database.from(DiscoveryQueueDOs)
             .leftJoin(BackfillDOs, on = DiscoveryQueueDOs.backfillId eq BackfillDOs.id)
             .joinReferencesAndSelect()
             .where {
                 val conditions = mutableListOf<ColumnDeclaring<Boolean>>()
                 conditions += BackfillDOs.tenantId eq tenant
-                status?.let { conditions += DiscoveryQueueDOs.status eq status }
+                conditions += DiscoveryQueueDOs.status inList statusList
+                backfillId?.let { conditions += DiscoveryQueueDOs.backfillId eq backfillId }
                 conditions.reduce { a, b -> a and b }
             }
             .map { DiscoveryQueueDOs.createEntity(it) }

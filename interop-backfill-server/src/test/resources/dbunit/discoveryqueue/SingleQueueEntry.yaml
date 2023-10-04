@@ -4,6 +4,7 @@ backfill:
     tenant_id: "tenant1"
     start_dt: "2022-08-01"
     end_dt: "2023-09-01"
+    is_deleted: "false"
 
 undiscovered_queue:
   - backfill_id: "tOjoCil6Sxm9WUuActucxA=="
