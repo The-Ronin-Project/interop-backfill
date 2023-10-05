@@ -1,7 +1,7 @@
 [versions]
 dbrider = "1.39.0"
 idea-ext = "1.1.7"
-interop-common = "3.12.1"
+interop-common = "3.12.2"
 interop-gradle = "3.2.0"
 # @pin until Spring Boot 3
 jakarta = "2.0.2"
@@ -10,7 +10,7 @@ kotlin = "1.9.0"
 kotlinx-coroutines = "1.7.3"
 ktor = "2.3.4"
 ktorm = "3.6.0"
-liquibase = "4.23.2"
+liquibase = "4.24.0"
 # @pin until Spring 6
 logstash = "7.3"
 mockk = "1.13.8"
@@ -19,7 +19,7 @@ openapi-generator = "7.0.1"
 # @pin until can move to JDK 17
 spring-boot = "2.7.13"
 springdoc = "1.7.0"
-testcontainers = "1.19.0"
+testcontainers = "1.19.1"
 
 [libraries]
 interop-common = { module = "com.projectronin.interop:interop-common", version.ref = "interop-common" }
