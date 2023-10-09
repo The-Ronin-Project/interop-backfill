@@ -1,21 +1,11 @@
 package com.projectronin.interop.backfill.server
 
-import com.projectronin.interop.backfill.server.generated.models.DiscoveryQueueEntry
-import com.projectronin.interop.backfill.server.generated.models.DiscoveryQueueStatus
-import com.projectronin.interop.backfill.server.generated.models.UpdateDiscoveryEntry
-import io.ktor.client.call.body
-import io.ktor.client.request.accept
-import io.ktor.client.request.bearerAuth
-import io.ktor.client.request.delete
-import io.ktor.client.request.get
-import io.ktor.client.request.parameter
-import io.ktor.client.request.patch
-import io.ktor.client.request.setBody
-import io.ktor.http.ContentType
-import io.ktor.http.HttpStatusCode
-import io.ktor.http.contentType
+import com.projectronin.interop.backfill.client.generated.models.DiscoveryQueueStatus
+import com.projectronin.interop.backfill.client.generated.models.UpdateDiscoveryEntry
+import com.projectronin.interop.common.http.exceptions.ClientFailureException
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertInstanceOf
 import org.junit.jupiter.api.Assertions.assertNotEquals
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
@@ -28,91 +18,59 @@ class DiscoveryQueueIT : BaseBackfillIT() {
     @Test
     fun `get works`() {
         val id = newBackFill()
-        val response = runBlocking {
-            httpClient.get("$serverUrl$urlPart") {
-                bearerAuth(retrieveFormBasedAuthentication().accessToken)
-                accept(ContentType.Application.Json)
-                contentType(ContentType.Application.Json)
-                parameter("tenant_id", "tenantId")
-            }
-        }
-        val entries = runBlocking { response.body<List<DiscoveryQueueEntry>>() }
-        assertEquals(HttpStatusCode.OK, response.status)
+
+        val entries = runBlocking { discoveryClient.getDiscoveryQueueEntries("tenantId") }
+
         assertNotNull(entries)
         assertEquals(2, entries.size)
-        assertEquals(id.id, entries.first().backfillId)
-        assertNotNull(entries.first().locationid)
+        assertEquals(id, entries.first().backfillId)
+        assertNotNull(entries.first().locationId)
     }
 
     @Test
     fun `get works by status and tenant and backfill `() {
         newBackFill()
         val id = newBackFill()
-        val response = runBlocking {
-            httpClient.get("$serverUrl$urlPart") {
-                bearerAuth(retrieveFormBasedAuthentication().accessToken)
-                accept(ContentType.Application.Json)
-                contentType(ContentType.Application.Json)
-                parameter("tenant_id", "tenantId")
-                parameter("status", DiscoveryQueueStatus.UNDISCOVERED)
-                parameter("backfillId", id.id.toString())
-            }
+
+        val entries = runBlocking {
+            discoveryClient.getDiscoveryQueueEntries("tenantId", DiscoveryQueueStatus.UNDISCOVERED, id)
         }
-        val entries = runBlocking { response.body<List<DiscoveryQueueEntry>>() }
-        assertEquals(HttpStatusCode.OK, response.status)
+
         assertNotNull(entries)
         assertEquals(2, entries.size)
-        assertEquals(id.id, entries.first().backfillId)
-        assertNotNull(entries.first().locationid)
+        assertEquals(id, entries.first().backfillId)
+        assertNotNull(entries.first().locationId)
     }
 
     @Test
     fun `get works by id`() {
         newBackFill()
         val entryId = discoveryDAO.getByTenant("tenantID").first().entryId
+        val entry = runBlocking { discoveryClient.getDiscoveryQueueEntryById(entryId) }
 
-        val response = runBlocking {
-            httpClient.get("$serverUrl$urlPart/$entryId") {
-                bearerAuth(retrieveFormBasedAuthentication().accessToken)
-                accept(ContentType.Application.Json)
-                contentType(ContentType.Application.Json)
-            }
-        }
-        assertEquals(HttpStatusCode.OK, response.status)
-        val entry = runBlocking { response.body<DiscoveryQueueEntry>() }
         assertNotNull(entry)
     }
 
     @Test
     fun `get can return a 404`() {
         newBackFill()
-        val response2 = runBlocking {
-            httpClient.get("$serverUrl$urlPart/${UUID.randomUUID()}") {
-                bearerAuth(retrieveFormBasedAuthentication().accessToken)
-                accept(ContentType.Application.Json)
-                contentType(ContentType.Application.Json)
-            }
+        val result = runCatching {
+            runBlocking { discoveryClient.getDiscoveryQueueEntryById(UUID.randomUUID()) }
         }
-        assertEquals(HttpStatusCode.NotFound, response2.status)
+
+        assertTrue(result.isFailure)
+        assertInstanceOf(ClientFailureException::class.java, result.exceptionOrNull())
     }
 
     @Test
     fun `patch works`() {
         newBackFill()
         val entryId = discoveryDAO.getByTenant("tenantID").first().entryId
-
-        val response = runBlocking {
-            httpClient.patch("$serverUrl$urlPart/$entryId") {
-                bearerAuth(retrieveFormBasedAuthentication().accessToken)
-                accept(ContentType.Application.Json)
-                contentType(ContentType.Application.Json)
-                setBody(UpdateDiscoveryEntry(DiscoveryQueueStatus.DISCOVERED))
-            }
+        runBlocking {
+            discoveryClient.updateDiscoveryQueueEntryByID(entryId, UpdateDiscoveryEntry(DiscoveryQueueStatus.DISCOVERED))
         }
-        assertEquals(HttpStatusCode.OK, response.status)
-
         val entries = discoveryDAO.getByTenant("tenantID")
-        val discovered = entries.filter { it.status == DiscoveryQueueStatus.DISCOVERED }
+        val discovered = entries.filter { it.status.toString() == DiscoveryQueueStatus.DISCOVERED.toString() }
         assertTrue(discovered.isNotEmpty())
         assertEquals(1, discovered.size)
         assertEquals(entryId, discovered.first().entryId)
@@ -123,14 +81,7 @@ class DiscoveryQueueIT : BaseBackfillIT() {
         newBackFill()
         val entryId = discoveryDAO.getByTenant("tenantID").first().entryId
 
-        val response = runBlocking {
-            httpClient.delete("$serverUrl$urlPart/$entryId") {
-                bearerAuth(retrieveFormBasedAuthentication().accessToken)
-                accept(ContentType.Application.Json)
-                contentType(ContentType.Application.Json)
-            }
-        }
-        assertEquals(HttpStatusCode.OK, response.status)
+        runBlocking { discoveryClient.deleteDiscoveryQueueEntryById(entryId) }
 
         val entries = discoveryDAO.getByTenant("tenantID")
         assertTrue(entries.isNotEmpty())

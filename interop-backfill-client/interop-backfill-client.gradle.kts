@@ -4,7 +4,10 @@ plugins {
 
 dependencies {
     implementation(platform(libs.spring.boot.parent))
-    // implementation(libs.spring.boot.actuator)
+
+    implementation(platform(libs.spring.boot.parent))
+    implementation("org.springframework.boot:spring-boot-starter-validation")
+    implementation(libs.spring.boot.actuator)
 
     implementation(libs.interop.common)
     implementation(libs.interop.commonHttp)
@@ -12,6 +15,7 @@ dependencies {
     implementation(libs.jakarta.validation.api)
 
     testImplementation(libs.mockk)
+    testImplementation(libs.mockwebserver)
 }
 
 openApiGenerate {

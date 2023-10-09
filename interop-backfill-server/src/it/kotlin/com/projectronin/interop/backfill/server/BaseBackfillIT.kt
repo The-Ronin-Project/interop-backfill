@@ -1,25 +1,23 @@
 package com.projectronin.interop.backfill.server
 
-import com.fasterxml.jackson.databind.JsonNode
+import com.projectronin.interop.backfill.client.BackfillClient
+import com.projectronin.interop.backfill.client.DiscoveryQueueClient
+import com.projectronin.interop.backfill.client.QueueClient
+import com.projectronin.interop.backfill.client.generated.models.NewBackfill
+import com.projectronin.interop.backfill.client.spring.BackfillClientConfig
+import com.projectronin.interop.backfill.client.spring.Server
 import com.projectronin.interop.backfill.server.data.BackfillDAO
 import com.projectronin.interop.backfill.server.data.BackfillQueueDAO
 import com.projectronin.interop.backfill.server.data.DiscoveryQueueDAO
 import com.projectronin.interop.backfill.server.data.binding.BackfillDOs
 import com.projectronin.interop.backfill.server.data.binding.BackfillQueueDOs
 import com.projectronin.interop.backfill.server.data.binding.DiscoveryQueueDOs
-import com.projectronin.interop.backfill.server.generated.models.GeneratedId
-import com.projectronin.interop.backfill.server.generated.models.NewBackfill
-import com.projectronin.interop.common.auth.Authentication
+import com.projectronin.interop.common.http.auth.AuthMethod
+import com.projectronin.interop.common.http.auth.AuthenticationSpringConfig
+import com.projectronin.interop.common.http.auth.Client
+import com.projectronin.interop.common.http.auth.InteropAuthenticationService
+import com.projectronin.interop.common.http.auth.Token
 import com.projectronin.interop.common.http.spring.HttpSpringConfig
-import io.ktor.client.call.body
-import io.ktor.client.request.accept
-import io.ktor.client.request.bearerAuth
-import io.ktor.client.request.forms.submitForm
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
-import io.ktor.http.ContentType
-import io.ktor.http.Parameters
-import io.ktor.http.contentType
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.AfterEach
 import org.ktorm.database.Database
@@ -27,8 +25,8 @@ import org.ktorm.dsl.deleteAll
 import org.testcontainers.containers.DockerComposeContainer
 import org.testcontainers.containers.wait.strategy.Wait
 import java.io.File
-import java.time.Instant
 import java.time.LocalDate
+import java.util.UUID
 
 abstract class BaseBackfillIT {
     companion object {
@@ -71,21 +69,7 @@ abstract class BaseBackfillIT {
         database.deleteAll(BackfillDOs)
     }
 
-    // This should really live in the client, but putting this here for now
-    protected fun retrieveFormBasedAuthentication(): Authentication = runBlocking {
-        val json: JsonNode = httpClient.submitForm(
-            url = "http://localhost:$mockAuthPort/backfill/token",
-            formParameters = Parameters.build {
-                append("grant_type", "client_credentials")
-                append("client_id", "id")
-                append("client_secret", "secret")
-            }
-        ).body()
-        val accessToken = json.get("access_token").asText()
-        FormBasedAuthentication(accessToken)
-    }
-
-    protected fun newBackFill(): GeneratedId {
+    protected fun newBackFill(): UUID {
         val backFill = NewBackfill(
             locationIds = listOf("123", "456"),
             startDate = LocalDate.of(2023, 9, 1),
@@ -93,21 +77,23 @@ abstract class BaseBackfillIT {
             tenantId = "tenantId"
         )
 
-        val response = runBlocking {
-            httpClient.post("$serverUrl/backfill") {
-                bearerAuth(retrieveFormBasedAuthentication().accessToken)
-                setBody(backFill)
-                accept(ContentType.Application.Json)
-                contentType(ContentType.Application.Json)
-            }
-        }
-        return runBlocking { response.body<GeneratedId>() }
+        return runBlocking { backfillClient.postBackfill(backFill) }.id!!
     }
 
-    data class FormBasedAuthentication(override val accessToken: String) : Authentication {
-        override val tokenType: String = "Bearer"
-        override val expiresAt: Instant? = null
-        override val refreshToken: String? = null
-        override val scope: String? = null
-    }
+    protected val authenticationService = InteropAuthenticationService(
+        httpClient,
+        authConfig = AuthenticationSpringConfig(
+            token = Token("http://localhost:$mockAuthPort/backfill/token"),
+            audience = "https://interop-backfill.dev.projectronin.io",
+            client = Client(
+                id = "id",
+                secret = "secret"
+            ),
+            method = AuthMethod.STANDARD
+        )
+    )
+    val config = BackfillClientConfig(server = Server("http://localhost:$serverPort"))
+    protected val backfillClient = BackfillClient(httpClient, config, authenticationService)
+    protected val discoveryClient = DiscoveryQueueClient(httpClient, config, authenticationService)
+    protected val queueClient = QueueClient(httpClient, config, authenticationService)
 }

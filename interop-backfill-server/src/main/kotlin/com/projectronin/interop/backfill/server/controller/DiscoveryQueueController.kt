@@ -65,7 +65,7 @@ class DiscoveryQueueController(
             tenantId = backfillDO.tenantId,
             startDate = backfillDO.startDate,
             endDate = backfillDO.endDate,
-            locationid = this.locationId,
+            locationId = this.locationId,
             status = this.status
         )
     }

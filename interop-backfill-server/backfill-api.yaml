@@ -108,7 +108,7 @@ paths:
           description: Filter by status, defaults to Discovery
           schema:
             $ref: '#/components/schemas/DiscoveryQueueStatus'
-        - name: backfillId
+        - name: backfill_id
           in: query
           description: defaults to all
           schema:
@@ -380,7 +380,7 @@ components:
         status:
           $ref: '#/components/schemas/BackfillStatus'
           required: true
-        lastUpdated:
+        last_updated:
           type: string
           format: date-time
           description: The last time any entry in this backfill was processed
@@ -395,13 +395,13 @@ components:
       properties:
         id:
           $ref: '#/components/schemas/Id'
-        backfillId:
+        backfill_id:
           $ref: '#/components/schemas/Id'
         tenant_id:
           type: string
           description: The ID of the organization to for the backfill
           example: 12345678
-        locationid:
+        location_id:
           type: string
           description: The location ids for this backfill entrye
         start_date:
@@ -431,26 +431,26 @@ components:
     NewQueueEntry:
       type: object
       properties:
-        backfillId:
+        backfill_id:
           $ref: '#/components/schemas/Id'
-        patientId:
+        patient_id:
           type: string
           description: The patient ids for this backfill entrye
       required:
-        - backfillId
-        - patientId
+        - backfill_id
+        - patient_id
     QueueEntry:
       type: object
       properties:
         id:
           $ref: '#/components/schemas/Id'
-        backfillId:
+        backfill_id:
           $ref: '#/components/schemas/Id'
         tenant_id:
           type: string
           description: The ID of the organization to for the backfill
           example: 12345678
-        patientId:
+        patient_id:
           type: string
           description: The patient ids for this backfill entry
         start_date:
@@ -463,13 +463,13 @@ components:
           description: The most recent date that data should be retrieved from
         status:
           $ref: '#/components/schemas/BackfillStatus'
-        lastUpdated:
+        last_updated:
           type: string
           format: date-time
           description: The last time any entry in this backfill was processed
       required:
         - id
-        - backfillId
+        - backfill_id
         - tenant_id
         - location_ids
         - start_date

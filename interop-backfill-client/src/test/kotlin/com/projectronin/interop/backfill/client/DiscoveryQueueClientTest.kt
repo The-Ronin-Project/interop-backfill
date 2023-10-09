@@ -1,9 +1,8 @@
 package com.projectronin.interop.backfill.client
 
-import com.projectronin.interop.backfill.client.generated.models.Backfill
-import com.projectronin.interop.backfill.client.generated.models.BackfillStatus
-import com.projectronin.interop.backfill.client.generated.models.GeneratedId
-import com.projectronin.interop.backfill.client.generated.models.NewBackfill
+import com.projectronin.interop.backfill.client.generated.models.DiscoveryQueueEntry
+import com.projectronin.interop.backfill.client.generated.models.DiscoveryQueueStatus
+import com.projectronin.interop.backfill.client.generated.models.UpdateDiscoveryEntry
 import com.projectronin.interop.backfill.client.spring.BackfillClientConfig
 import com.projectronin.interop.backfill.client.spring.Server
 import com.projectronin.interop.common.http.auth.InteropAuthenticationService
@@ -16,12 +15,10 @@ import kotlinx.coroutines.runBlocking
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
-
-class BackfillClientTest {
+class DiscoveryQueueClientTest {
     private val mockWebServer = MockWebServer()
     private val hostUrl = mockWebServer.url("/test")
     private val authenticationToken = "123456"
@@ -31,87 +28,68 @@ class BackfillClientTest {
         }
     }
     private val httpClient = HttpSpringConfig().getHttpClient()
-    private val client = BackfillClient(httpClient, BackfillClientConfig(Server(hostUrl.toString())), authenticationService)
-    private val expectedBackfill = Backfill(
+
+    private val client = DiscoveryQueueClient(httpClient, BackfillClientConfig(Server(hostUrl.toString())), authenticationService)
+    private val expectedDiscoveryEntry = DiscoveryQueueEntry(
         id = UUID.randomUUID(),
+        backfillId = UUID.randomUUID(),
+        locationId = "123",
         startDate = LocalDate.now(),
         endDate = LocalDate.now(),
         tenantId = "123",
-        locationIds = listOf("1", "2"),
-        status = BackfillStatus.STARTED
+        status = DiscoveryQueueStatus.UNDISCOVERED
     )
 
     @Test
-    fun `getBackfillById works`() {
-        val backFillJson = JacksonManager.objectMapper.writeValueAsString(expectedBackfill)
+    fun `getDiscoveryQueueEntries - works`() {
+        val expectedDiscoveryEntryJson = JacksonManager.objectMapper.writeValueAsString(listOf(expectedDiscoveryEntry))
         mockWebServer.enqueue(
             MockResponse()
                 .setResponseCode(HttpStatusCode.OK.value)
-                .setBody(backFillJson)
+                .setBody(expectedDiscoveryEntryJson)
                 .setHeader("Content-Type", "application/json")
         )
 
         val response = runBlocking {
-            client.getBackfillById(
+            client.getDiscoveryQueueEntries(
+                "tenant",
+                DiscoveryQueueStatus.DISCOVERED,
                 UUID.fromString("1d531a31-49a9-af74-03d5-573b456efca5")
             )
         }
-        assertEquals(expectedBackfill, response)
+        assertEquals(listOf(expectedDiscoveryEntry), response)
         val request = mockWebServer.takeRequest()
         assertEquals("GET", request.method)
-        assertEquals(true, request.path?.endsWith("/backfill/1d531a31-49a9-af74-03d5-573b456efca5"))
+        assertEquals(true, request.path?.endsWith("/discovery-queue?tenant_id=tenant&status=DISCOVERED&backfill_id=1d531a31-49a9-af74-03d5-573b456efca5"))
         assertEquals("Bearer $authenticationToken", request.getHeader("Authorization"))
     }
 
     @Test
-    fun `getBackfills works`() {
-        val backfillJson = JacksonManager.objectMapper.writeValueAsString(listOf(expectedBackfill))
+    fun `getDiscoveryQueueEntryById - works`() {
+        val expectedDiscoveryEntryJson = JacksonManager.objectMapper.writeValueAsString(expectedDiscoveryEntry)
         mockWebServer.enqueue(
             MockResponse()
                 .setResponseCode(HttpStatusCode.OK.value)
-                .setBody(backfillJson)
+                .setBody(expectedDiscoveryEntryJson)
                 .setHeader("Content-Type", "application/json")
         )
 
         val response = runBlocking {
-            client.getBackfills(
-                "tenant"
+            client.getDiscoveryQueueEntryById(
+                UUID.fromString("1d531a31-49a9-af74-03d5-573b456efca5")
             )
         }
-        assertEquals(listOf(expectedBackfill), response)
+        assertEquals(expectedDiscoveryEntry, response)
         val request = mockWebServer.takeRequest()
         assertEquals("GET", request.method)
-        assertEquals(true, request.path?.endsWith("/backfill?tenant_id=tenant"))
+        assertEquals(true, request.path?.endsWith("/discovery-queue/1d531a31-49a9-af74-03d5-573b456efca5"))
         assertEquals("Bearer $authenticationToken", request.getHeader("Authorization"))
     }
 
     @Test
-    fun `postBackfill works`() {
-        val newUUID = JacksonManager.objectMapper.writeValueAsString(GeneratedId(UUID.fromString("1d531a31-49a9-af74-03d5-573b456efca5")))
-        mockWebServer.enqueue(
-            MockResponse()
-                .setResponseCode(HttpStatusCode.OK.value)
-                .setBody(newUUID)
-                .setHeader("Content-Type", "application/json")
-        )
-        val newBackfill = NewBackfill("tenant", listOf("1", "2"), LocalDate.now(), LocalDate.now())
-
-        val response = runBlocking {
-            client.postBackfill(
-                newBackfill = newBackfill
-            )
-        }
-        val expectedResponse = GeneratedId(UUID.fromString("1d531a31-49a9-af74-03d5-573b456efca5"))
-        assertEquals(expectedResponse, response)
-        val request = mockWebServer.takeRequest()
-        assertEquals("POST", request.method)
-        assertEquals(true, request.path?.endsWith("/backfill"))
-        assertEquals(JacksonManager.objectMapper.writeValueAsString(newBackfill), String(request.body.readByteArray()))
-        assertEquals("Bearer $authenticationToken", request.getHeader("Authorization"))
-    }
-
-    @Test
-    fun `deleteBackFill works`() {
+    fun `updateDiscoveryQueueEntryByID - works`() {
+        val updateDiscoveryEntry = UpdateDiscoveryEntry(DiscoveryQueueStatus.UNDISCOVERED)
+        val expectedDiscoveryEntryJson = JacksonManager.objectMapper.writeValueAsString(updateDiscoveryEntry)
         mockWebServer.enqueue(
             MockResponse()
                 .setResponseCode(HttpStatusCode.OK.value)
@@ -120,12 +98,35 @@ class BackfillClientTest {
         )
 
         val response = runBlocking {
-            client.deleteBackfill(UUID.fromString("1d531a31-49a9-af74-03d5-573b456efca5"))
+            client.updateDiscoveryQueueEntryByID(
+                UUID.fromString("1d531a31-49a9-af74-03d5-573b456efca5"),
+                updateDiscoveryEntry
+            )
         }
-        assertTrue(response)
+        assertEquals(true, response)
+        val request = mockWebServer.takeRequest()
+        assertEquals("PATCH", request.method)
+        assertEquals(true, request.path?.endsWith("/discovery-queue/1d531a31-49a9-af74-03d5-573b456efca5"))
+        assertEquals(expectedDiscoveryEntryJson, String(request.body.readByteArray()))
+        assertEquals("Bearer $authenticationToken", request.getHeader("Authorization"))
+    }
+
+    @Test
+    fun `deleteDiscoveryQueueEntryById - works`() {
+        mockWebServer.enqueue(
+            MockResponse()
+                .setResponseCode(HttpStatusCode.OK.value)
+                .setBody("true")
+                .setHeader("Content-Type", "application/json")
+        )
+
+        val response = runBlocking {
+            client.deleteDiscoveryQueueEntryById(UUID.fromString("1d531a31-49a9-af74-03d5-573b456efca5"))
+        }
+        assertEquals(true, response)
         val request = mockWebServer.takeRequest()
         assertEquals("DELETE", request.method)
-        assertEquals(true, request.path?.endsWith("/backfill/1d531a31-49a9-af74-03d5-573b456efca5"))
+        assertEquals(true, request.path?.endsWith("/discovery-queue/1d531a31-49a9-af74-03d5-573b456efca5"))
         assertEquals("Bearer $authenticationToken", request.getHeader("Authorization"))
     }
 }

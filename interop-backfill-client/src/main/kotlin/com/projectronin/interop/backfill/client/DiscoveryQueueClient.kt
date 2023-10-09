@@ -1,8 +1,8 @@
 package com.projectronin.interop.backfill.client
 
-import com.projectronin.interop.backfill.client.generated.models.Backfill
-import com.projectronin.interop.backfill.client.generated.models.GeneratedId
-import com.projectronin.interop.backfill.client.generated.models.NewBackfill
+import com.projectronin.interop.backfill.client.generated.models.DiscoveryQueueEntry
+import com.projectronin.interop.backfill.client.generated.models.DiscoveryQueueStatus
+import com.projectronin.interop.backfill.client.generated.models.UpdateDiscoveryEntry
 import com.projectronin.interop.backfill.client.spring.BackfillClientConfig
 import com.projectronin.interop.common.http.auth.InteropAuthenticationService
 import com.projectronin.interop.common.http.request
@@ -13,7 +13,7 @@ import io.ktor.client.request.bearerAuth
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.parameter
-import io.ktor.client.request.post
+import io.ktor.client.request.patch
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
@@ -22,20 +22,42 @@ import org.springframework.stereotype.Component
 import java.util.UUID
 
 @Component
-class BackfillClient(
+class DiscoveryQueueClient(
     private val client: HttpClient,
     backfillClientConfig: BackfillClientConfig,
     @Qualifier("backfill")
     private val authenticationService: InteropAuthenticationService
 ) {
-    private val resourceUrl: String = "${backfillClientConfig.server.url}/backfill"
+    private val resourceUrl: String = "${backfillClientConfig.server.url}/discovery-queue"
 
     /**
-     * Retrieves a single [Backfill] object based on the [UUID]
+     * Retrieves all [DiscoveryQueueEntry]s based on the provided criteria
      */
-    suspend fun getBackfillById(backfillId: UUID): Backfill {
+    suspend fun getDiscoveryQueueEntries(
+        tenantId: String,
+        status: DiscoveryQueueStatus? = null,
+        backfillId: UUID? = null
+    ): List<DiscoveryQueueEntry> {
         val authentication = authenticationService.getAuthentication()
-        val urlString = "$resourceUrl/$backfillId"
+        val response = client.request("BackFill", resourceUrl) { url ->
+            get(url) {
+                bearerAuth(authentication.accessToken)
+                accept(ContentType.Application.Json)
+                contentType(ContentType.Application.Json)
+                parameter("tenant_id", tenantId)
+                status?.let { parameter("status", status) }
+                backfillId?.let { parameter("backfill_id", backfillId) }
+            }
+        }
+        return response.body()
+    }
+
+    /**
+     * Retrieves a single [DiscoveryQueueEntry] object based on the [UUID]
+     */
+    suspend fun getDiscoveryQueueEntryById(discoveryQueueId: UUID): DiscoveryQueueEntry {
+        val authentication = authenticationService.getAuthentication()
+        val urlString = "$resourceUrl/$discoveryQueueId"
         val response = client.request("BackFill", urlString) { url ->
             get(url) {
                 bearerAuth(authentication.accessToken)
@@ -47,49 +69,32 @@ class BackfillClient(
     }
 
     /**
-     * Retrieves all [Backfill] objects based on the tenant id
+     * Updates a [DiscoveryQueueEntry]'s status based on the supplied info. Returns true
      */
-    suspend fun getBackfills(tenantId: String): List<Backfill> {
+    suspend fun updateDiscoveryQueueEntryByID(
+        discoveryQueueId: UUID,
+        updateDiscoveryEntry: UpdateDiscoveryEntry
+    ): Boolean {
         val authentication = authenticationService.getAuthentication()
-        val response = client.request("BackFill", resourceUrl) { url ->
-            get(url) {
+        val urlString = "$resourceUrl/$discoveryQueueId"
+        val response = client.request("BackFill", urlString) { url ->
+            patch(url) {
                 bearerAuth(authentication.accessToken)
                 accept(ContentType.Application.Json)
                 contentType(ContentType.Application.Json)
-                parameter("tenant_id", tenantId)
+                setBody(updateDiscoveryEntry)
             }
         }
         return response.body()
     }
 
     /**
-     * Creates a new [Backfill] and returns the [GeneratedId],
-     * server will also populate the DiscoveryQueueEntries for each location
+     * Marks a [DiscoveryQueueEntry]'s status as deleted. Returns true. Entry can still be found by direct
+     * UUID lookup or lookup of [getDiscoveryQueueEntries] where the status is deleted
      */
-    suspend fun postBackfill(newBackfill: NewBackfill): GeneratedId {
+    suspend fun deleteDiscoveryQueueEntryById(discoveryQueueId: UUID): Boolean {
         val authentication = authenticationService.getAuthentication()
-
-        val response = client.request("BackFill", resourceUrl) { url ->
-            post(url) {
-                bearerAuth(authentication.accessToken)
-                accept(ContentType.Application.Json)
-                contentType(ContentType.Application.Json)
-                setBody(newBackfill)
-                accept(ContentType.Application.Json)
-                contentType(ContentType.Application.Json)
-            }
-        }
-        return response.body()
-    }
-
-    /**
-     * Marks all queue entries as DELETED and soft-deletes the actual backfill
-     * Both can still be discovered by direct UUID lookup but will be hiden by broader searches
-     */
-
-    suspend fun deleteBackfill(backfillId: UUID): Boolean {
-        val authentication = authenticationService.getAuthentication()
-        val urlString = "$resourceUrl/$backfillId"
+        val urlString = "$resourceUrl/$discoveryQueueId"
         val response = client.request("BackFill", urlString) { url ->
             delete(url) {
                 bearerAuth(authentication.accessToken)
