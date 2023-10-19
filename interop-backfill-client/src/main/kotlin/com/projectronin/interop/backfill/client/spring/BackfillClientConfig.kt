@@ -1,12 +1,15 @@
 package com.projectronin.interop.backfill.client.spring
 
 import org.springframework.boot.context.properties.ConfigurationProperties
-import org.springframework.context.annotation.Configuration
+import org.springframework.boot.context.properties.ConstructorBinding
+import javax.validation.Valid
+import javax.validation.constraints.NotEmpty
 
-@Configuration
 @ConfigurationProperties(prefix = "backfill")
+@ConstructorBinding
 data class BackfillClientConfig(
-    val server: Server
+    @Valid
+    val server: Server = Server()
 )
 
-data class Server(val url: String)
+data class Server(@NotEmpty val url: String = "")

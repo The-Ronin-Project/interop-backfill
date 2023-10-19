@@ -1,4 +1,4 @@
-name: Interop Validation Server Integration Tests
+name: Interop Backfill Server Integration Tests
 on:
   push:
     branches: [ main ]

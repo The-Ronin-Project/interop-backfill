@@ -13,7 +13,7 @@ import com.projectronin.interop.backfill.server.data.binding.BackfillDOs
 import com.projectronin.interop.backfill.server.data.binding.BackfillQueueDOs
 import com.projectronin.interop.backfill.server.data.binding.DiscoveryQueueDOs
 import com.projectronin.interop.common.http.auth.AuthMethod
-import com.projectronin.interop.common.http.auth.AuthenticationSpringConfig
+import com.projectronin.interop.common.http.auth.AuthenticationConfig
 import com.projectronin.interop.common.http.auth.Client
 import com.projectronin.interop.common.http.auth.InteropAuthenticationService
 import com.projectronin.interop.common.http.auth.Token
@@ -82,7 +82,7 @@ abstract class BaseBackfillIT {
 
     protected val authenticationService = InteropAuthenticationService(
         httpClient,
-        authConfig = AuthenticationSpringConfig(
+        authConfig = AuthenticationConfig(
             token = Token("http://localhost:$mockAuthPort/backfill/token"),
             audience = "https://interop-backfill.dev.projectronin.io",
             client = Client(

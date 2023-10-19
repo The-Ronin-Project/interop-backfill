@@ -417,7 +417,7 @@ components:
       required:
         - id
         - tenant_id
-        - location_ids
+        - location_id
         - start_date
         - end_date
     UpdateDiscoveryEntry:
