@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.interop.gradle.spring.framework) apply false
     alias(libs.plugins.interop.gradle.server.version)
     alias(libs.plugins.interop.gradle.version.catalog)
+    alias(libs.plugins.interop.gradle.sonarqube)
 
     alias(libs.plugins.openapi.generator) apply false
     // We need to force IntelliJ to do some actions they expose through this plugin.

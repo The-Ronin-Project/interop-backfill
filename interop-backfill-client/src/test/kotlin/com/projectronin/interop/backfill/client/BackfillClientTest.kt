@@ -31,7 +31,8 @@ class BackfillClientTest {
         }
     }
     private val httpClient = HttpSpringConfig().getHttpClient()
-    private val client = BackfillClient(httpClient, BackfillClientConfig(Server(hostUrl.toString())), authenticationService)
+    private val client =
+        BackfillClient(httpClient, BackfillClientConfig(Server(hostUrl.toString())), authenticationService)
     private val expectedBackfill = Backfill(
         id = UUID.randomUUID(),
         startDate = LocalDate.now(),
@@ -87,7 +88,8 @@ class BackfillClientTest {
 
     @Test
     fun `postBackfill works`() {
-        val newUUID = JacksonManager.objectMapper.writeValueAsString(GeneratedId(UUID.fromString("1d531a31-49a9-af74-03d5-573b456efca5")))
+        val newUUID =
+            JacksonManager.objectMapper.writeValueAsString(GeneratedId(UUID.fromString("1d531a31-49a9-af74-03d5-573b456efca5")))
         mockWebServer.enqueue(
             MockResponse()
                 .setResponseCode(HttpStatusCode.OK.value)
