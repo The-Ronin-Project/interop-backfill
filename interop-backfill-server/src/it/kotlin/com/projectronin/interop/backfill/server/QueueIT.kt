@@ -69,8 +69,8 @@ class QueueIT : BaseBackfillIT() {
 
         val result = runBlocking { queueClient.getQueueEntryById(entryId) }
 
-        assertEquals(id, result?.backfillId)
-        assertEquals(BackfillStatus.STARTED, result?.status)
+        assertEquals(id, result.backfillId)
+        assertEquals(BackfillStatus.STARTED, result.status)
     }
 
     @Test
