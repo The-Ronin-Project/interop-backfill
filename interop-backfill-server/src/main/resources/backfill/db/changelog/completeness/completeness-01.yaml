@@ -1,0 +1,27 @@
+databaseChangeLog:
+  - changeSet:
+      id: completeness-create
+      author: Sam Felt
+      preConditions:
+        - onFail: MARK_RAN
+          not:
+            - tableExists:
+                tableName: completeness
+      changes:
+        - createTable:
+            tableName: completeness
+            columns:
+              - column:
+                  name: queue_id
+                  type: BINARY(16)
+                  constraints:
+                    nullable: false
+                    references: backfill_queue(entry_id)
+                    foreignKeyName: fk_completeness_backfill_queue
+                    unique: true
+                    uniqueConstraintName: uk_completeness_backfill_queue
+              - column:
+                  name: last_seen_dt_tm
+                  type: DATETIME(6)
+                  constraints:
+                    nullable: false

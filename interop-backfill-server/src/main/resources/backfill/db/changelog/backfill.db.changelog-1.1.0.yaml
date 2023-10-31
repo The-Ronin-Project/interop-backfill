@@ -1,0 +1,3 @@
+databaseChangeLog:
+  - include:
+      file: backfill/db/changelog/completeness/completeness-01.yaml
