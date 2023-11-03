@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test
 import java.util.UUID
 
 class DiscoveryQueueIT : BaseBackfillIT() {
-    private val urlPart = "/discovery-queue"
 
     @Test
     fun `get works`() {

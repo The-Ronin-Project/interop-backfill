@@ -9,6 +9,7 @@ import org.ktorm.dsl.eq
 import org.ktorm.dsl.insert
 import org.ktorm.dsl.update
 import org.springframework.stereotype.Repository
+import java.time.OffsetDateTime
 import java.util.UUID
 
 @Repository
@@ -22,10 +23,10 @@ class CompletenessDAO(database: Database) : BaseInteropDAO<CompletenessDO, UUID>
         }
     }
 
-    fun update(completenessDO: CompletenessDO) {
+    fun update(entryID: UUID, lastSeen: OffsetDateTime) {
         database.update(CompletenessDOs) {
-            set(it.lastSeen, completenessDO.lastSeen)
-            where { it.queueId eq completenessDO.queueId }
+            set(it.lastSeen, lastSeen)
+            where { it.queueId eq entryID }
         }
     }
 

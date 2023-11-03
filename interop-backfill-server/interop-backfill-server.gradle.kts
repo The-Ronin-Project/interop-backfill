@@ -5,18 +5,25 @@ plugins {
 dependencies {
     api(enforcedPlatform(libs.kotlin.bom))
     implementation(platform(libs.spring.boot.parent))
-    implementation("org.springframework.boot:spring-boot-starter")
-    implementation("org.springframework.boot:spring-boot-starter-actuator")
-    implementation("org.springframework.boot:spring-boot-starter-oauth2-resource-server")
-    implementation("org.springframework.boot:spring-boot-starter-jdbc")
-    implementation("org.springframework.boot:spring-boot-starter-web")
-    implementation(libs.springdoc.openapi.ui)
+    implementation(libs.spring.boot.starter)
+    implementation(libs.spring.boot.starter.actuator)
+    implementation(libs.spring.boot.starter.jdbc)
+    implementation(libs.spring.boot.starter.oauth)
+    implementation(libs.spring.boot.starter.web)
+
+    // implementation(libs.bundles.spring.boot.starter)
+    implementation(libs.spring.boot.kafka)
+
     implementation(libs.interop.common)
     implementation(libs.interop.commonJackson)
     implementation(libs.interop.commonKtorm)
+    implementation(libs.interop.kafka.events.internal)
+    implementation(libs.interop.fhir)
 
     implementation(libs.ktorm.core)
     implementation(libs.ktorm.support.mysql)
+    implementation(libs.ronin.kafka)
+    implementation(libs.springdoc.openapi.ui)
 
     runtimeOnly(libs.liquibase.core)
     // Needed to format logs for DataDog
@@ -25,8 +32,10 @@ dependencies {
 
     testImplementation(libs.ktor.client.mock)
     testImplementation(libs.mockk)
+    testImplementation(libs.interop.fhir.generators)
     testImplementation(libs.interop.commonTestDb)
     testImplementation(libs.rider.core)
+    testImplementation(libs.ronin.test.data.generator)
 
     testRuntimeOnly("org.testcontainers:mysql")
 
@@ -39,6 +48,12 @@ dependencies {
     itImplementation(libs.interop.commonHttp)
     itImplementation(libs.interop.commonJackson)
     itImplementation(libs.interop.commonKtorm)
+    itImplementation(libs.interop.kafka.events.internal)
+    itImplementation(libs.interop.fhir)
+    itImplementation(libs.interop.fhir.generators)
+    itImplementation(libs.interop.kafka)
+    itImplementation(libs.interop.kafka.testing.client)
+    itImplementation(libs.ronin.test.data.generator)
 }
 
 openApiGenerate {

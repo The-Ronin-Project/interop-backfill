@@ -14,8 +14,6 @@ import java.time.LocalDate
 import java.util.UUID
 
 class BackfillIT : BaseBackfillIT() {
-    private val urlPart = "/backfill"
-
     @Test
     fun `post works`() {
         val backFill = NewBackfill(

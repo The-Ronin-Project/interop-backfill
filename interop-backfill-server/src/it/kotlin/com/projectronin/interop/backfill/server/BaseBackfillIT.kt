@@ -8,9 +8,11 @@ import com.projectronin.interop.backfill.client.spring.BackfillClientConfig
 import com.projectronin.interop.backfill.client.spring.Server
 import com.projectronin.interop.backfill.server.data.BackfillDAO
 import com.projectronin.interop.backfill.server.data.BackfillQueueDAO
+import com.projectronin.interop.backfill.server.data.CompletenessDAO
 import com.projectronin.interop.backfill.server.data.DiscoveryQueueDAO
 import com.projectronin.interop.backfill.server.data.binding.BackfillDOs
 import com.projectronin.interop.backfill.server.data.binding.BackfillQueueDOs
+import com.projectronin.interop.backfill.server.data.binding.CompletenessDOs
 import com.projectronin.interop.backfill.server.data.binding.DiscoveryQueueDOs
 import com.projectronin.interop.common.http.auth.AuthMethod
 import com.projectronin.interop.common.http.auth.AuthenticationConfig
@@ -57,6 +59,7 @@ abstract class BaseBackfillIT {
     protected val backfillDAO = BackfillDAO(database)
     protected val queueDAO = BackfillQueueDAO(database)
     protected val discoveryDAO = DiscoveryQueueDAO(database)
+    protected val completenessDAO = CompletenessDAO(database)
 
     @AfterEach
     fun tearDown() {
@@ -64,6 +67,7 @@ abstract class BaseBackfillIT {
     }
 
     private fun purgeData() {
+        database.deleteAll(CompletenessDOs)
         database.deleteAll(DiscoveryQueueDOs)
         database.deleteAll(BackfillQueueDOs)
         database.deleteAll(BackfillDOs)

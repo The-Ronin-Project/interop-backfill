@@ -7,8 +7,8 @@ dependencies {
     implementation(platform(libs.spring.boot.parent))
 
     implementation(platform(libs.spring.boot.parent))
-    implementation("org.springframework.boot:spring-boot-starter-validation")
-    implementation(libs.spring.boot.actuator)
+    implementation(libs.spring.boot.starter.actuator)
+    implementation(libs.spring.boot.starter.validation)
 
     implementation(libs.interop.common)
     implementation(libs.interop.commonHttp)

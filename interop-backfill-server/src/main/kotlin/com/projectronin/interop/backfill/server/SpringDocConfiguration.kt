@@ -1,4 +1,4 @@
-package com.projectronin.interop.backfill.server.data
+package com.projectronin.interop.backfill.server
 
 import io.swagger.v3.oas.models.Components
 import io.swagger.v3.oas.models.OpenAPI

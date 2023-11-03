@@ -33,12 +33,10 @@ class CompletenessDAOTest {
     @DataSet(value = ["/dbunit/completeness/SingleCompletenessEntry.yaml"], cleanAfter = true)
     @ExpectedDataSet(value = ["/dbunit/completeness/UpdatedCompletenessEntry.yaml"], orderBy = ["backfill_id", "patient_id"])
     fun `update works`() {
+        val queueId = UUID.fromString("5f2139f1-3522-4746-8eb9-5607b9e0b663")
+        val lastSeen = OffsetDateTime.of(2023, 10, 28, 12, 12, 12, 0, OffsetDateTime.now().offset)
         val dao = CompletenessDAO(KtormHelper.database())
-        val newEntry = CompletenessDO {
-            queueId = UUID.fromString("5f2139f1-3522-4746-8eb9-5607b9e0b663")
-            lastSeen = OffsetDateTime.of(2023, 10, 28, 12, 12, 12, 0, OffsetDateTime.now().offset)
-        }
-        dao.update(newEntry)
+        dao.update(queueId, lastSeen)
     }
 
     @Test
