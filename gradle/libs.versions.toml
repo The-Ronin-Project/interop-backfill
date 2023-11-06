@@ -3,7 +3,7 @@ dbrider = "1.39.0"
 idea-ext = "1.1.7"
 interop-common = "3.13.3"
 interop-event-internal = "1.2.3"
-interop-fhir = "8.10.2"
+interop-fhir = "8.10.3"
 interop-gradle = "3.3.0"
 interop-kafka = "8.5.1"
 # @pin until Spring Boot 3
@@ -18,10 +18,10 @@ liquibase = "4.24.0"
 logstash = "7.3"
 mockk = "1.13.8"
 mockwebserver = "4.12.0"
-ronin-kafka = "1.1.1"
-ronin-test = "0.2.0"
 mysql = "8.0.33"
 openapi-generator = "7.0.1"
+ronin-kafka = "1.1.1"
+ronin-test = "0.2.0"
 # @pin until can move to JDK 17
 spring-boot = "2.7.13"
 springdoc = "1.7.0"
@@ -36,8 +36,8 @@ interop-commonTestDb = { module = "com.projectronin.interop:interop-common-test-
 interop-fhir = { module = "com.projectronin.interop.fhir:interop-fhir", version.ref = "interop-fhir" }
 interop-fhir-generators = { module = "com.projectronin.interop.fhir:interop-fhir-generators", version.ref = "interop-fhir" }
 interop-kafka = { module = "com.projectronin.interop.publish:interop-kafka", version.ref = "interop-kafka" }
-interop-kafka-testing-client = { module = "com.projectronin.interop.publish:interop-kafka-testing-client", version.ref = "interop-kafka" }
 interop-kafka-events-internal = { module = "com.projectronin.contract.event:event-interop-resource-internal", version.ref = "interop-event-internal" }
+interop-kafka-testing-client = { module = "com.projectronin.interop.publish:interop-kafka-testing-client", version.ref = "interop-kafka" }
 jakarta-validation-api = { module = "jakarta.validation:jakarta.validation-api", version.ref = "jakarta" }
 # @keep to force version
 kotlin-bom = { module = "org.jetbrains.kotlin:kotlin-bom", version.ref = "kotlin" }
@@ -52,10 +52,10 @@ logstash-logback-encoder = { module = "net.logstash.logback:logstash-logback-enc
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 mockwebserver = { module = "com.squareup.okhttp3:mockwebserver", version.ref = "mockwebserver" }
 mysql-connector-java = { module = "mysql:mysql-connector-java", version.ref = "mysql" }
-ronin-kafka = { module = "com.projectronin:ronin-kafka", version.ref = "ronin-kafka" }
-ronin-test-data-generator = { module = "com.projectronin.test:ronin-test-data-generator", version.ref = "ronin-test" }
 # @keep Wants to throw this out during upgrades for some reason.
 rider-core = { module = "com.github.database-rider:rider-core", version.ref = "dbrider" }
+ronin-kafka = { module = "com.projectronin:ronin-kafka", version.ref = "ronin-kafka" }
+ronin-test-data-generator = { module = "com.projectronin.test:ronin-test-data-generator", version.ref = "ronin-test" }
 spring-boot-kafka = { module = "org.springframework.kafka:spring-kafka", version.ref = "spring-boot" }
 spring-boot-parent = { module = "org.springframework.boot:spring-boot-parent", version.ref = "spring-boot" }
 spring-boot-starter = { module = "org.springframework.boot:spring-boot-starter", version.ref = "spring-boot" }
@@ -77,7 +77,7 @@ spring-boot-starter = [
     "spring-boot-starter-actuator",
     "spring-boot-starter-jdbc",
     "spring-boot-starter-oauth",
-    "spring-boot-starter-web"
+    "spring-boot-starter-web",
 ]
 
 [plugins]
