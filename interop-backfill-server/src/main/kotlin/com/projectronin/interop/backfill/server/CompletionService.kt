@@ -9,26 +9,32 @@ import com.projectronin.interop.backfill.server.generated.models.BackfillStatus
 import com.projectronin.interop.common.jackson.JacksonUtil
 import com.projectronin.interop.fhir.r4.resource.Patient
 import mu.KotlinLogging
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.kafka.annotation.KafkaListener
 import org.springframework.kafka.support.KafkaHeaders
 import org.springframework.messaging.handler.annotation.Header
+import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Service
 import java.time.Instant
 import java.time.OffsetDateTime
 import java.time.ZoneOffset
 import java.util.UUID
+import kotlin.time.Duration.Companion.milliseconds
+import kotlin.time.Duration.Companion.minutes
 
 @Service
 class CompletionService(
     val queueDAO: BackfillQueueDAO,
-    val completenessDAO: CompletenessDAO
+    val completenessDAO: CompletenessDAO,
+    @Value("\${backfill.resolver.runner.ms}")
+    val timeToWait: Long = 20.minutes.inWholeMilliseconds
 ) {
     val logger = KotlinLogging.logger { }
 
     @KafkaListener(
         topicPattern = "oci.us-phoenix-1.interop-mirth.*-publish-adhoc.v1",
         groupId = "interop-backfill",
-        properties = ["metadata.max.age.ms:\${backfill.kafka.listenerRefresh:300000}"]
+        properties = ["metadata.max.age.ms:\${backfill.kafka.listener.refresh.ms:300000}"]
     )
     fun eventConsumer(
         message: String,
@@ -91,6 +97,28 @@ class CompletionService(
                 existingCompletenessDO.queueId,
                 lastSeen = eventCreatedTime
             )
+        }
+    }
+
+    @Scheduled(fixedRateString = "\${backfill.resolver.runner.ms:600000}")
+    fun resolve() {
+        logger.debug { "Attempting to resolve" }
+        val okToResolveTime = OffsetDateTime.now().minusSeconds(
+            // no minusMilliseconds, so convert to seconds
+            timeToWait.milliseconds.inWholeSeconds
+        )
+        logger.debug { okToResolveTime }
+        val inProgressEntries = queueDAO.getAllInProgressEntries()
+        logger.debug { "Found ${inProgressEntries.size} to potentially resolve" }
+        inProgressEntries.forEach {
+            completenessDAO.getByID(it.entryId)?.let { completeness ->
+                logger.debug { "Found entry matching queue with timestamp of ${completeness.lastSeen}," }
+                if (completeness.lastSeen < okToResolveTime) {
+                    logger.debug { "Entry is old enough" }
+                    queueDAO.updateStatus(it.entryId, status = BackfillStatus.COMPLETED)
+                    completenessDAO.delete(it.entryId)
+                }
+            }
         }
     }
 }

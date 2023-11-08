@@ -10,10 +10,17 @@ import com.projectronin.interop.common.test.database.liquibase.LiquibaseTest
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import java.time.OffsetDateTime
+import java.time.ZoneOffset
+import java.util.TimeZone
 import java.util.UUID
 
 @LiquibaseTest(changeLog = "backfill/db/changelog/backfill.db.changelog-master.yaml")
 class CompletenessDAOTest {
+    init {
+        // We have to set this to prevent some DBUnit weirdness around UTC and the local time zone that DST seems to cause.
+        TimeZone.setDefault(TimeZone.getTimeZone("UTC"))
+    }
+
     @DBRiderConnection
     lateinit var connectionHolder: ConnectionHolder
 
@@ -24,7 +31,7 @@ class CompletenessDAOTest {
         val dao = CompletenessDAO(KtormHelper.database())
         val newEntry = CompletenessDO {
             queueId = UUID.fromString("5f2139f1-3522-4746-8eb9-5607b9e0b663")
-            lastSeen = OffsetDateTime.of(2023, 10, 27, 12, 12, 12, 0, OffsetDateTime.now().offset)
+            lastSeen = OffsetDateTime.of(2023, 10, 27, 12, 12, 12, 0, ZoneOffset.UTC)
         }
         dao.create(newEntry)
     }
@@ -34,7 +41,7 @@ class CompletenessDAOTest {
     @ExpectedDataSet(value = ["/dbunit/completeness/UpdatedCompletenessEntry.yaml"], orderBy = ["backfill_id", "patient_id"])
     fun `update works`() {
         val queueId = UUID.fromString("5f2139f1-3522-4746-8eb9-5607b9e0b663")
-        val lastSeen = OffsetDateTime.of(2023, 10, 28, 12, 12, 12, 0, OffsetDateTime.now().offset)
+        val lastSeen = OffsetDateTime.of(2023, 10, 28, 12, 12, 12, 0, ZoneOffset.UTC)
         val dao = CompletenessDAO(KtormHelper.database())
         dao.update(queueId, lastSeen)
     }

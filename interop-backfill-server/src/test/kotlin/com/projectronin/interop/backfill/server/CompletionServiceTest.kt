@@ -30,7 +30,8 @@ class CompletionServiceTest {
     private val completenessDAO = mockk<CompletenessDAO>()
     private val queueDAO = mockk<BackfillQueueDAO>()
     private val event = mockk<InteropResourcePublishV1>()
-    private val completionService = CompletionService(queueDAO, completenessDAO)
+    private val tenMilliseconds = 10.toLong()
+    private val completionService = CompletionService(queueDAO, completenessDAO, tenMilliseconds)
 
     @BeforeEach
     fun `mockk em`() {
@@ -298,5 +299,88 @@ class CompletionServiceTest {
         verify(exactly = 1) { completenessDAO.getByID(any()) }
         verify(exactly = 0) { completenessDAO.update(any(), any()) }
         verify(exactly = 1) { completenessDAO.create(any()) }
+    }
+
+    @Test
+    fun `resolve only attempts when started events are present`() {
+        every { queueDAO.getAllInProgressEntries() } returns emptyList()
+        completionService.resolve()
+        verify(exactly = 1) { queueDAO.getAllInProgressEntries() }
+        verify(exactly = 0) { completenessDAO.getByID(any()) }
+        verify(exactly = 0) { queueDAO.updateStatus(any(), any()) }
+        verify(exactly = 0) { completenessDAO.delete(any()) }
+    }
+
+    @Test
+    fun `resolve doesn't resolve if entry hasn't been seen`() {
+        val testedEntryId = UUID.randomUUID()
+        every { queueDAO.getAllInProgressEntries() } returns listOf(
+            mockk {
+                every { entryId } returns testedEntryId
+            }
+        )
+        every { completenessDAO.getByID(testedEntryId) } returns null
+        completionService.resolve()
+        verify(exactly = 1) { queueDAO.getAllInProgressEntries() }
+        verify(exactly = 1) { completenessDAO.getByID(testedEntryId) }
+        verify(exactly = 0) { queueDAO.updateStatus(any(), any()) }
+        verify(exactly = 0) { completenessDAO.delete(testedEntryId) }
+    }
+
+    @Test
+    fun `resolve doesn't resolve new events`() {
+        val testedEntryId = UUID.randomUUID()
+        every { queueDAO.getAllInProgressEntries() } returns listOf(
+            mockk {
+                every { entryId } returns testedEntryId
+            }
+        )
+        every { completenessDAO.getByID(testedEntryId) } returns mockk {
+            every { lastSeen } returns OffsetDateTime.now().plusDays(2)
+        }
+        completionService.resolve()
+        verify(exactly = 1) { queueDAO.getAllInProgressEntries() }
+        verify(exactly = 1) { completenessDAO.getByID(testedEntryId) }
+        verify(exactly = 0) { queueDAO.updateStatus(testedEntryId, BackfillStatus.COMPLETED) }
+        verify(exactly = 0) { completenessDAO.delete(testedEntryId) }
+    }
+
+    @Test
+    fun `resolve doesn't events resolves old events`() {
+        val testedEntryId = UUID.randomUUID()
+        every { queueDAO.getAllInProgressEntries() } returns listOf(
+            mockk {
+                every { entryId } returns testedEntryId
+            }
+        )
+        every { completenessDAO.getByID(testedEntryId) } returns mockk {
+            every { lastSeen } returns OffsetDateTime.now().plusDays(1)
+        }
+        completionService.resolve()
+        verify(exactly = 1) { queueDAO.getAllInProgressEntries() }
+        verify(exactly = 1) { completenessDAO.getByID(testedEntryId) }
+        verify(exactly = 0) { queueDAO.updateStatus(testedEntryId, BackfillStatus.COMPLETED) }
+        verify(exactly = 0) { completenessDAO.delete(testedEntryId) }
+    }
+
+    @Test
+    fun `resolve resolves old events`() {
+        val testedEntryId = UUID.randomUUID()
+        every { queueDAO.getAllInProgressEntries() } returns listOf(
+            mockk {
+                every { entryId } returns testedEntryId
+            }
+        )
+        every { completenessDAO.getByID(testedEntryId) } returns mockk {
+            every { lastSeen } returns OffsetDateTime.now().minusDays(1)
+        }
+
+        every { queueDAO.updateStatus(testedEntryId, BackfillStatus.COMPLETED) } just runs
+        every { completenessDAO.delete(testedEntryId) } just runs
+        completionService.resolve()
+        verify(exactly = 1) { queueDAO.getAllInProgressEntries() }
+        verify(exactly = 1) { completenessDAO.getByID(testedEntryId) }
+        verify(exactly = 1) { queueDAO.updateStatus(testedEntryId, BackfillStatus.COMPLETED) }
+        verify(exactly = 1) { completenessDAO.delete(testedEntryId) }
     }
 }

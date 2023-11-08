@@ -11,7 +11,8 @@ services:
       AUTH0_AUDIENCE: "https://interop-backfill.dev.projectronin.io"
       SPRING_KAFKA_BOOTSTRAPSERVERS: "kafka:19092"
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: "http://mock-oauth2:8080/backfill"
-      BACKFILL_KAFKA_LISTENERREFRESH: 6000
+      BACKFILL_KAFKA_LISTENER_REFRESH_MS: 6000
+      BACKFILL_RESOLVER_RUNNER_MS: 10000
       LOGGING_LEVEL_COM_PROJECTRONIN_INTEROP: "DEBUG"
     depends_on:
       mysql-server:

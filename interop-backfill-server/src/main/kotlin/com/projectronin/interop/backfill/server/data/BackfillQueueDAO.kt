@@ -48,6 +48,14 @@ class BackfillQueueDAO(database: Database) : BaseInteropDAO<BackfillQueueDO, UUI
             .map { BackfillQueueDOs.createEntity(it) }
     }
 
+    fun getAllInProgressEntries(): List<BackfillQueueDO> {
+        return database.from(BackfillQueueDOs)
+            .leftJoin(BackfillDOs, on = BackfillQueueDOs.backfillId eq BackfillDOs.id)
+            .joinReferencesAndSelect()
+            .where(BackfillQueueDOs.status eq BackfillStatus.STARTED)
+            .map { BackfillQueueDOs.createEntity(it) }
+    }
+
     fun insert(backfillQueue: BackfillQueueDO): UUID? {
         val newUUID = UUID.randomUUID()
         database.insert(BackfillQueueDOs) {

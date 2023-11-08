@@ -83,4 +83,13 @@ class BackfillQueueDAOTest {
         val dao = BackfillQueueDAO(KtormHelper.database())
         dao.updateStatus(UUID.fromString("981d2048-eb49-4bfd-ba96-8291288641c3"), BackfillStatus.COMPLETED)
     }
+
+    @Test
+    @DataSet(value = ["/dbunit/backfillqueue/MultipleQueueEntries.yaml"], cleanAfter = true)
+    fun `getAllInProgressEntries works `() {
+        val dao = BackfillQueueDAO(KtormHelper.database())
+        val entry = dao.getAllInProgressEntries()
+        assertEquals(1, entry.size)
+        assertEquals(UUID.fromString("5f2139f1-3522-4746-8eb9-5607b9e0b663"), entry.first().entryId)
+    }
 }
