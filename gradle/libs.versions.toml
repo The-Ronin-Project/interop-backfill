@@ -3,15 +3,15 @@ dbrider = "1.39.0"
 idea-ext = "1.1.7"
 interop-common = "3.13.3"
 interop-event-internal = "1.2.3"
-interop-fhir = "8.10.3"
+interop-fhir = "8.11.0"
 interop-gradle = "3.3.0"
-interop-kafka = "8.5.1"
+interop-kafka = "8.5.2"
 # @pin until Spring Boot 3
 jakarta = "2.0.2"
 # @keep for forcing version
 kotlin = "1.9.0"
 kotlinx-coroutines = "1.7.3"
-ktor = "2.3.5"
+ktor = "2.3.6"
 ktorm = "3.6.0"
 liquibase = "4.24.0"
 # @pin until Spring 6
