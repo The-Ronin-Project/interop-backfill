@@ -30,8 +30,7 @@ class CompletionServiceTest {
     private val completenessDAO = mockk<CompletenessDAO>()
     private val queueDAO = mockk<BackfillQueueDAO>()
     private val event = mockk<InteropResourcePublishV1>()
-    private val tenMilliseconds = 10.toLong()
-    private val completionService = CompletionService(queueDAO, completenessDAO, tenMilliseconds)
+    private val completionService = CompletionService(queueDAO, completenessDAO, "10")
 
     @BeforeEach
     fun `mockk em`() {

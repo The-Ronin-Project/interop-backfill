@@ -26,10 +26,11 @@ import kotlin.time.Duration.Companion.minutes
 class CompletionService(
     val queueDAO: BackfillQueueDAO,
     val completenessDAO: CompletenessDAO,
-    @Value("\${backfill.resolver.runner.ms}")
-    val timeToWait: Long = 20.minutes.inWholeMilliseconds
+    @Value("\${backfill.resolver.wait.ms:#{null}}")
+    timeToWaitString: String?
 ) {
     val logger = KotlinLogging.logger { }
+    val timeToWait: Long = timeToWaitString?.toLong() ?: 20.minutes.inWholeMilliseconds
 
     @KafkaListener(
         topicPattern = "oci.us-phoenix-1.interop-mirth.*-publish-adhoc.v1",
