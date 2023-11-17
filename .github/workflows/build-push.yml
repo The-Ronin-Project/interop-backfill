@@ -46,13 +46,12 @@ jobs:
       password: ${{ secrets.NEXUS_DOCKER_PASSWORD }}
 
 
-#  argocd_dev:
-#    uses: projectronin/github/.github/workflows/argocd_deploy.yml@argocd_deploy/v1
-#    needs:
-#      - fetch-metadata
-#      - image-build-push
-#    with:
-#      environment: dev
-#      image-tag: ${{ github.sha }}
-#    secrets:
-#      argocd-svc-automation: ${{ secrets.ARGOCD_SVC_AUTOMATION }}
+  deploy:
+    uses: projectronin/ronin-charts/.github/workflows/deploy.yaml@deploy/v3
+    needs: [ fetch-metadata, image-build-push ]
+    with:
+      environment: dev
+      application: interop-backfill
+      commit-sha: ${{ github.sha }}
+      tag: ${{ needs.fetch-metadata.outputs.version }}
+    secrets: inherit

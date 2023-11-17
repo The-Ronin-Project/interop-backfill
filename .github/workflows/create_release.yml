@@ -97,3 +97,12 @@ jobs:
           tag: ${{ needs.tag.outputs.tag }}
           body: ${{ steps.changelog.outputs.changelog }}
           artifacts: "**/build/libs/*.jar"
+  deploy:
+    uses: projectronin/ronin-charts/.github/workflows/deploy.yaml@deploy/v3
+    needs: [ tag, release ]
+    with:
+      environment: dev
+      application: interop-backfill
+      commit-sha: ${{ github.sha }}
+      tag: ${{ needs.tag.outputs.tag }}
+    secrets: inherit
