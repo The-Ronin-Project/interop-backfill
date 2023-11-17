@@ -34,7 +34,7 @@ class CompletionService(
 
     @KafkaListener(
         topicPattern = "oci.us-phoenix-1.interop-mirth.*-publish-adhoc.v1",
-        groupId = "interop-backfill",
+        groupId = "interop-backfill_group",
         properties = ["metadata.max.age.ms:\${backfill.kafka.listener.refresh.ms:300000}"]
     )
     fun eventConsumer(
