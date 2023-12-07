@@ -68,7 +68,7 @@ openApiGenerate {
             "useTags" to "true",
             "packageName" to "com.projectronin.interop.backfill.server.generated",
             "basePackage" to "com.projectronin.interop.backfill.server.generated",
-            "gradleBuildFile" to "false"
-        )
+            "gradleBuildFile" to "false",
+        ),
     )
 }

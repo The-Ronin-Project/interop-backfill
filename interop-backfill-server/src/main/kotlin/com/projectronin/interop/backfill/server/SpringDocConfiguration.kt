@@ -19,17 +19,19 @@ class SpringDocConfiguration {
                 Info()
                     .title("Backfill Service")
                     .description("The Backfill provides APIs loading backfills of data for a tenant.")
-                    .version("1.0.0")
+                    .version("1.0.0"),
             )
             .components(
                 Components()
                     .addSecuritySchemes(
                         "auth0",
-                        SecurityScheme() // This is defined as oauth2 within the OpenAPI spec to match the actual use, but is defined as Bearer here to allow for "Try It Out" support that is not available with Swagger and Auth0
+                        // This is defined as oauth2 within the OpenAPI spec to match the actual use,
+                        // but is defined as Bearer here to allow for "Try It Out" support that is not available with Swagger and Auth0
+                        SecurityScheme()
                             .type(SecurityScheme.Type.HTTP)
                             .scheme("bearer")
-                            .bearerFormat("JWT")
-                    )
+                            .bearerFormat("JWT"),
+                    ),
             )
     }
 }

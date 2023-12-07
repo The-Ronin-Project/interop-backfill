@@ -16,7 +16,6 @@ import java.util.UUID
 
 @LiquibaseTest(changeLog = "backfill/db/changelog/backfill.db.changelog-master.yaml")
 class BackfillQueueDAOTest {
-
     @DBRiderConnection
     lateinit var connectionHolder: ConnectionHolder
 
@@ -25,11 +24,12 @@ class BackfillQueueDAOTest {
     @ExpectedDataSet(value = ["/dbunit/backfillqueue/SingleQueueEntry.yaml"], ignoreCols = ["entry_id", "update_dt_tm"])
     fun `insert works`() {
         val dao = BackfillQueueDAO(KtormHelper.database())
-        val newEntry = BackfillQueueDO {
-            backfillId = UUID.fromString("b4e8e80a-297a-4b19-bd59-4b8072db9cc4")
-            patientId = "123"
-            status = BackfillStatus.NOT_STARTED
-        }
+        val newEntry =
+            BackfillQueueDO {
+                backfillId = UUID.fromString("b4e8e80a-297a-4b19-bd59-4b8072db9cc4")
+                patientId = "123"
+                status = BackfillStatus.NOT_STARTED
+            }
         val uuid = dao.insert(newEntry)
         assertNotNull(uuid)
     }
@@ -78,7 +78,11 @@ class BackfillQueueDAOTest {
 
     @Test
     @DataSet(value = ["/dbunit/backfillqueue/MultipleQueueEntries.yaml"], cleanAfter = true)
-    @ExpectedDataSet(value = ["/dbunit/backfillqueue/MultipleQueueEntriesAfterUpdate.yaml"], orderBy = ["backfill_id", "patient_id"], ignoreCols = ["update_dt_tm"])
+    @ExpectedDataSet(
+        value = ["/dbunit/backfillqueue/MultipleQueueEntriesAfterUpdate.yaml"],
+        orderBy = ["backfill_id", "patient_id"],
+        ignoreCols = ["update_dt_tm"],
+    )
     fun `update works`() {
         val dao = BackfillQueueDAO(KtormHelper.database())
         dao.updateStatus(UUID.fromString("981d2048-eb49-4bfd-ba96-8291288641c3"), BackfillStatus.COMPLETED)

@@ -25,22 +25,25 @@ class BackfillClientTest {
     private val mockWebServer = MockWebServer()
     private val hostUrl = mockWebServer.url("/test")
     private val authenticationToken = "123456"
-    private val authenticationService = mockk<InteropAuthenticationService> {
-        every { getAuthentication() } returns mockk {
-            every { accessToken } returns authenticationToken
+    private val authenticationService =
+        mockk<InteropAuthenticationService> {
+            every { getAuthentication() } returns
+                mockk {
+                    every { accessToken } returns authenticationToken
+                }
         }
-    }
     private val httpClient = HttpSpringConfig().getHttpClient()
     private val client =
         BackfillClient(httpClient, BackfillClientConfig(Server(hostUrl.toString())), authenticationService)
-    private val expectedBackfill = Backfill(
-        id = UUID.randomUUID(),
-        startDate = LocalDate.now(),
-        endDate = LocalDate.now(),
-        tenantId = "123",
-        locationIds = listOf("1", "2"),
-        status = BackfillStatus.STARTED
-    )
+    private val expectedBackfill =
+        Backfill(
+            id = UUID.randomUUID(),
+            startDate = LocalDate.now(),
+            endDate = LocalDate.now(),
+            tenantId = "123",
+            locationIds = listOf("1", "2"),
+            status = BackfillStatus.STARTED,
+        )
 
     @Test
     fun `getBackfillById works`() {
@@ -49,14 +52,15 @@ class BackfillClientTest {
             MockResponse()
                 .setResponseCode(HttpStatusCode.OK.value)
                 .setBody(backFillJson)
-                .setHeader("Content-Type", "application/json")
+                .setHeader("Content-Type", "application/json"),
         )
 
-        val response = runBlocking {
-            client.getBackfillById(
-                UUID.fromString("1d531a31-49a9-af74-03d5-573b456efca5")
-            )
-        }
+        val response =
+            runBlocking {
+                client.getBackfillById(
+                    UUID.fromString("1d531a31-49a9-af74-03d5-573b456efca5"),
+                )
+            }
         assertEquals(expectedBackfill, response)
         val request = mockWebServer.takeRequest()
         assertEquals("GET", request.method)
@@ -71,14 +75,15 @@ class BackfillClientTest {
             MockResponse()
                 .setResponseCode(HttpStatusCode.OK.value)
                 .setBody(backfillJson)
-                .setHeader("Content-Type", "application/json")
+                .setHeader("Content-Type", "application/json"),
         )
 
-        val response = runBlocking {
-            client.getBackfills(
-                "tenant"
-            )
-        }
+        val response =
+            runBlocking {
+                client.getBackfills(
+                    "tenant",
+                )
+            }
         assertEquals(listOf(expectedBackfill), response)
         val request = mockWebServer.takeRequest()
         assertEquals("GET", request.method)
@@ -94,15 +99,16 @@ class BackfillClientTest {
             MockResponse()
                 .setResponseCode(HttpStatusCode.OK.value)
                 .setBody(newUUID)
-                .setHeader("Content-Type", "application/json")
+                .setHeader("Content-Type", "application/json"),
         )
         val newBackfill = NewBackfill("tenant", listOf("1", "2"), LocalDate.now(), LocalDate.now())
 
-        val response = runBlocking {
-            client.postBackfill(
-                newBackfill = newBackfill
-            )
-        }
+        val response =
+            runBlocking {
+                client.postBackfill(
+                    newBackfill = newBackfill,
+                )
+            }
         val expectedResponse = GeneratedId(UUID.fromString("1d531a31-49a9-af74-03d5-573b456efca5"))
         assertEquals(expectedResponse, response)
         val request = mockWebServer.takeRequest()
@@ -118,12 +124,13 @@ class BackfillClientTest {
             MockResponse()
                 .setResponseCode(HttpStatusCode.OK.value)
                 .setBody("true")
-                .setHeader("Content-Type", "application/json")
+                .setHeader("Content-Type", "application/json"),
         )
 
-        val response = runBlocking {
-            client.deleteBackfill(UUID.fromString("1d531a31-49a9-af74-03d5-573b456efca5"))
-        }
+        val response =
+            runBlocking {
+                client.deleteBackfill(UUID.fromString("1d531a31-49a9-af74-03d5-573b456efca5"))
+            }
         assertTrue(response)
         val request = mockWebServer.takeRequest()
         assertEquals("DELETE", request.method)

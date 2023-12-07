@@ -25,22 +25,25 @@ class QueueClientTest {
     private val mockWebServer = MockWebServer()
     private val hostUrl = mockWebServer.url("/test")
     private val authenticationToken = "123456"
-    private val authenticationService = mockk<InteropAuthenticationService> {
-        every { getAuthentication() } returns mockk {
-            every { accessToken } returns authenticationToken
+    private val authenticationService =
+        mockk<InteropAuthenticationService> {
+            every { getAuthentication() } returns
+                mockk {
+                    every { accessToken } returns authenticationToken
+                }
         }
-    }
     private val httpClient = HttpSpringConfig().getHttpClient()
     private val client = QueueClient(httpClient, BackfillClientConfig(Server(hostUrl.toString())), authenticationService)
-    private val expectedQueueEntry = QueueEntry(
-        id = UUID.randomUUID(),
-        backfillId = UUID.randomUUID(),
-        patientId = "123",
-        startDate = LocalDate.now(),
-        endDate = LocalDate.now(),
-        tenantId = "123",
-        status = BackfillStatus.STARTED
-    )
+    private val expectedQueueEntry =
+        QueueEntry(
+            id = UUID.randomUUID(),
+            backfillId = UUID.randomUUID(),
+            patientId = "123",
+            startDate = LocalDate.now(),
+            endDate = LocalDate.now(),
+            tenantId = "123",
+            status = BackfillStatus.STARTED,
+        )
 
     @Test
     fun `getEntriesByBackfillID - works`() {
@@ -49,14 +52,15 @@ class QueueClientTest {
             MockResponse()
                 .setResponseCode(HttpStatusCode.OK.value)
                 .setBody(expectedQueueEntryJson)
-                .setHeader("Content-Type", "application/json")
+                .setHeader("Content-Type", "application/json"),
         )
 
-        val response = runBlocking {
-            client.getEntriesByBackfillID(
-                UUID.fromString("1d531a31-49a9-af74-03d5-573b456efca5")
-            )
-        }
+        val response =
+            runBlocking {
+                client.getEntriesByBackfillID(
+                    UUID.fromString("1d531a31-49a9-af74-03d5-573b456efca5"),
+                )
+            }
         assertEquals(listOf(expectedQueueEntry), response)
         val request = mockWebServer.takeRequest()
         assertEquals("GET", request.method)
@@ -71,14 +75,15 @@ class QueueClientTest {
             MockResponse()
                 .setResponseCode(HttpStatusCode.OK.value)
                 .setBody(expectedQueueEntryJson)
-                .setHeader("Content-Type", "application/json")
+                .setHeader("Content-Type", "application/json"),
         )
 
-        val response = runBlocking {
-            client.getQueueEntries(
-                "tenant"
-            )
-        }
+        val response =
+            runBlocking {
+                client.getQueueEntries(
+                    "tenant",
+                )
+            }
         assertEquals(listOf(expectedQueueEntry), response)
         val request = mockWebServer.takeRequest()
         assertEquals("GET", request.method)
@@ -93,14 +98,15 @@ class QueueClientTest {
             MockResponse()
                 .setResponseCode(HttpStatusCode.OK.value)
                 .setBody(expectedQueueEntryJson)
-                .setHeader("Content-Type", "application/json")
+                .setHeader("Content-Type", "application/json"),
         )
 
-        val response = runBlocking {
-            client.getQueueEntryById(
-                UUID.fromString("1d531a31-49a9-af74-03d5-573b456efca5")
-            )
-        }
+        val response =
+            runBlocking {
+                client.getQueueEntryById(
+                    UUID.fromString("1d531a31-49a9-af74-03d5-573b456efca5"),
+                )
+            }
         assertEquals(expectedQueueEntry, response)
         val request = mockWebServer.takeRequest()
         assertEquals("GET", request.method)
@@ -110,10 +116,11 @@ class QueueClientTest {
 
     @Test
     fun `postQueueEntry - works`() {
-        val newQueueEntry = NewQueueEntry(
-            backfillId = UUID.fromString("1d531a31-49a9-af74-03d5-573b456efca5"),
-            patientId = "123"
-        )
+        val newQueueEntry =
+            NewQueueEntry(
+                backfillId = UUID.fromString("1d531a31-49a9-af74-03d5-573b456efca5"),
+                patientId = "123",
+            )
         val generatedId = GeneratedId(UUID.randomUUID())
         val expectedNewQueueEntryJson = JacksonManager.objectMapper.writeValueAsString(listOf(newQueueEntry))
         val expectedGeneratedIds = JacksonManager.objectMapper.writeValueAsString(listOf(generatedId))
@@ -121,15 +128,16 @@ class QueueClientTest {
             MockResponse()
                 .setResponseCode(HttpStatusCode.OK.value)
                 .setBody(expectedGeneratedIds)
-                .setHeader("Content-Type", "application/json")
+                .setHeader("Content-Type", "application/json"),
         )
 
-        val response = runBlocking {
-            client.postQueueEntry(
-                UUID.fromString("1d531a31-49a9-af74-03d5-573b456efca5"),
-                listOf(newQueueEntry)
-            )
-        }
+        val response =
+            runBlocking {
+                client.postQueueEntry(
+                    UUID.fromString("1d531a31-49a9-af74-03d5-573b456efca5"),
+                    listOf(newQueueEntry),
+                )
+            }
         assertEquals(listOf(generatedId), response)
         val request = mockWebServer.takeRequest()
         assertEquals("POST", request.method)
@@ -140,23 +148,25 @@ class QueueClientTest {
 
     @Test
     fun `updateQueueEntryByID - works`() {
-        val updatedQueueEntry = UpdateQueueEntry(
-            status = BackfillStatus.COMPLETED
-        )
+        val updatedQueueEntry =
+            UpdateQueueEntry(
+                status = BackfillStatus.COMPLETED,
+            )
         val expectedNewQueueEntryJson = JacksonManager.objectMapper.writeValueAsString(updatedQueueEntry)
         mockWebServer.enqueue(
             MockResponse()
                 .setResponseCode(HttpStatusCode.OK.value)
                 .setBody("true")
-                .setHeader("Content-Type", "application/json")
+                .setHeader("Content-Type", "application/json"),
         )
 
-        val response = runBlocking {
-            client.updateQueueEntryByID(
-                UUID.fromString("1d531a31-49a9-af74-03d5-573b456efca5"),
-                updatedQueueEntry
-            )
-        }
+        val response =
+            runBlocking {
+                client.updateQueueEntryByID(
+                    UUID.fromString("1d531a31-49a9-af74-03d5-573b456efca5"),
+                    updatedQueueEntry,
+                )
+            }
         assertEquals(true, response)
         val request = mockWebServer.takeRequest()
         assertEquals("PATCH", request.method)
@@ -171,14 +181,15 @@ class QueueClientTest {
             MockResponse()
                 .setResponseCode(HttpStatusCode.OK.value)
                 .setBody("true")
-                .setHeader("Content-Type", "application/json")
+                .setHeader("Content-Type", "application/json"),
         )
 
-        val response = runBlocking {
-            client.deleteQueueEntryById(
-                UUID.fromString("1d531a31-49a9-af74-03d5-573b456efca5")
-            )
-        }
+        val response =
+            runBlocking {
+                client.deleteQueueEntryById(
+                    UUID.fromString("1d531a31-49a9-af74-03d5-573b456efca5"),
+                )
+            }
         assertEquals(true, response)
         val request = mockWebServer.takeRequest()
         assertEquals("DELETE", request.method)

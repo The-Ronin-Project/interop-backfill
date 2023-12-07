@@ -13,10 +13,11 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
+
 @RestController
 class DiscoveryQueueController(
     private val backfillDAO: BackfillDAO,
-    private val discoveryQueueDAO: DiscoveryQueueDAO
+    private val discoveryQueueDAO: DiscoveryQueueDAO,
 ) : DiscoveryQueueApi {
     val logger = KotlinLogging.logger { }
 
@@ -25,7 +26,7 @@ class DiscoveryQueueController(
     override fun getDiscoveryQueueEntries(
         tenantId: String,
         status: DiscoveryQueueStatus?,
-        backfillId: UUID?
+        backfillId: UUID?,
     ): ResponseEntity<List<DiscoveryQueueEntry>> {
         val entries = discoveryQueueDAO.getByTenant(tenantId, status, backfillId)
         // some information is stored on the actual backfill object
@@ -45,7 +46,7 @@ class DiscoveryQueueController(
     @PreAuthorize("hasAuthority('SCOPE_update:discovery')")
     override fun updateDiscoveryQueueEntryByID(
         discoveryQueueId: UUID,
-        updateDiscoveryEntry: UpdateDiscoveryEntry
+        updateDiscoveryEntry: UpdateDiscoveryEntry,
     ): ResponseEntity<Boolean> {
         discoveryQueueDAO.updateStatus(discoveryQueueId, updateDiscoveryEntry.status)
         return ResponseEntity.ok(true)
@@ -66,7 +67,7 @@ class DiscoveryQueueController(
             startDate = backfillDO.startDate,
             endDate = backfillDO.endDate,
             locationId = this.locationId,
-            status = this.status
+            status = this.status,
         )
     }
 }

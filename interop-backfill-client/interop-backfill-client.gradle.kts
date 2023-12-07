@@ -28,13 +28,14 @@ openApiGenerate {
             "enumPropertyNaming" to "UPPERCASE",
             "packageName" to "com.projectronin.interop.backfill.client.generated",
             "gradleBuildFile" to "false",
-            "documentationProvider" to "none" // Prevent Swagger annotations
-        )
+            // Prevent Swagger annotations
+            "documentationProvider" to "none",
+        ),
     )
     globalProperties.set(
         mapOf(
             "apis" to "false",
-            "models" to ""
-        )
+            "models" to "",
+        ),
     )
 }

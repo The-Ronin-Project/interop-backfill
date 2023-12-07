@@ -28,7 +28,7 @@ class QueueClient(
     private val client: HttpClient,
     backfillClientConfig: BackfillClientConfig,
     @Qualifier("backfill")
-    private val authenticationService: InteropAuthenticationService
+    private val authenticationService: InteropAuthenticationService,
 ) {
     private val resourceUrl: String = "${backfillClientConfig.server.url}/queue"
 
@@ -38,13 +38,14 @@ class QueueClient(
     suspend fun getEntriesByBackfillID(backfillId: UUID): List<QueueEntry> {
         val authentication = authenticationService.getAuthentication()
         val urlString = "$resourceUrl/backfill/$backfillId"
-        val response = client.request("BackFill", urlString) { url ->
-            get(url) {
-                bearerAuth(authentication.accessToken)
-                accept(ContentType.Application.Json)
-                contentType(ContentType.Application.Json)
+        val response =
+            client.request("BackFill", urlString) { url ->
+                get(url) {
+                    bearerAuth(authentication.accessToken)
+                    accept(ContentType.Application.Json)
+                    contentType(ContentType.Application.Json)
+                }
             }
-        }
         return response.body()
     }
 
@@ -54,14 +55,15 @@ class QueueClient(
      */
     suspend fun getQueueEntries(tenantId: String): List<QueueEntry> {
         val authentication = authenticationService.getAuthentication()
-        val response = client.request("BackFill", resourceUrl) { url ->
-            get(url) {
-                bearerAuth(authentication.accessToken)
-                accept(ContentType.Application.Json)
-                contentType(ContentType.Application.Json)
-                parameter("tenant_id", tenantId)
+        val response =
+            client.request("BackFill", resourceUrl) { url ->
+                get(url) {
+                    bearerAuth(authentication.accessToken)
+                    accept(ContentType.Application.Json)
+                    contentType(ContentType.Application.Json)
+                    parameter("tenant_id", tenantId)
+                }
             }
-        }
         return response.body()
     }
 
@@ -71,47 +73,56 @@ class QueueClient(
     suspend fun getQueueEntryById(queueId: UUID): QueueEntry {
         val authentication = authenticationService.getAuthentication()
         val urlString = "$resourceUrl/$queueId"
-        val response = client.request("BackFill", urlString) { url ->
-            get(url) {
-                bearerAuth(authentication.accessToken)
-                accept(ContentType.Application.Json)
-                contentType(ContentType.Application.Json)
+        val response =
+            client.request("BackFill", urlString) { url ->
+                get(url) {
+                    bearerAuth(authentication.accessToken)
+                    accept(ContentType.Application.Json)
+                    contentType(ContentType.Application.Json)
+                }
             }
-        }
         return response.body()
     }
 
     /**
      * Creates new [QueueEntry]s. Returns a list of [GeneratedId]s for the new entries.
      */
-    suspend fun postQueueEntry(backfillId: UUID, newQueueEntries: List<NewQueueEntry>): List<GeneratedId> {
+    suspend fun postQueueEntry(
+        backfillId: UUID,
+        newQueueEntries: List<NewQueueEntry>,
+    ): List<GeneratedId> {
         val authentication = authenticationService.getAuthentication()
         val urlString = "$resourceUrl/backfill/$backfillId"
-        val response = client.request("BackFill", urlString) { url ->
-            post(url) {
-                bearerAuth(authentication.accessToken)
-                accept(ContentType.Application.Json)
-                contentType(ContentType.Application.Json)
-                setBody(newQueueEntries)
+        val response =
+            client.request("BackFill", urlString) { url ->
+                post(url) {
+                    bearerAuth(authentication.accessToken)
+                    accept(ContentType.Application.Json)
+                    contentType(ContentType.Application.Json)
+                    setBody(newQueueEntries)
+                }
             }
-        }
         return response.body()
     }
 
     /**
      * Updates a [QueueEntry]'s status based on the provided criteria. Returns true
      */
-    suspend fun updateQueueEntryByID(queueId: UUID, updateQueueEntry: UpdateQueueEntry): Boolean {
+    suspend fun updateQueueEntryByID(
+        queueId: UUID,
+        updateQueueEntry: UpdateQueueEntry,
+    ): Boolean {
         val authentication = authenticationService.getAuthentication()
         val urlString = "$resourceUrl/$queueId"
-        val response = client.request("BackFill", urlString) { url ->
-            patch(url) {
-                bearerAuth(authentication.accessToken)
-                accept(ContentType.Application.Json)
-                contentType(ContentType.Application.Json)
-                setBody(updateQueueEntry)
+        val response =
+            client.request("BackFill", urlString) { url ->
+                patch(url) {
+                    bearerAuth(authentication.accessToken)
+                    accept(ContentType.Application.Json)
+                    contentType(ContentType.Application.Json)
+                    setBody(updateQueueEntry)
+                }
             }
-        }
         return response.body()
     }
 
@@ -122,13 +133,14 @@ class QueueClient(
     suspend fun deleteQueueEntryById(queueId: UUID): Boolean {
         val authentication = authenticationService.getAuthentication()
         val urlString = "$resourceUrl/$queueId"
-        val response = client.request("BackFill", urlString) { url ->
-            delete(url) {
-                bearerAuth(authentication.accessToken)
-                accept(ContentType.Application.Json)
-                contentType(ContentType.Application.Json)
+        val response =
+            client.request("BackFill", urlString) { url ->
+                delete(url) {
+                    bearerAuth(authentication.accessToken)
+                    accept(ContentType.Application.Json)
+                    contentType(ContentType.Application.Json)
+                }
             }
-        }
         return response.body()
     }
 }

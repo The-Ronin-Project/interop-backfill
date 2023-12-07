@@ -24,18 +24,24 @@ import java.util.UUID
 @Repository
 class DiscoveryQueueDAO(database: Database) : BaseInteropDAO<DiscoveryQueueDO, UUID>(database) {
     override val primaryKeyColumn = DiscoveryQueueDOs.entryId
+
     fun getByBackfillID(backfillId: UUID): List<DiscoveryQueueDO> {
         return database.valueLookup(backfillId, DiscoveryQueueDOs.backfillId)
     }
 
-    fun getByTenant(tenant: String, status: DiscoveryQueueStatus? = null, backfillId: UUID? = null): List<DiscoveryQueueDO> {
+    fun getByTenant(
+        tenant: String,
+        status: DiscoveryQueueStatus? = null,
+        backfillId: UUID? = null,
+    ): List<DiscoveryQueueDO> {
         logger.debug { "Searching for UndiscoveredQueue Entries for organization $tenant" }
         status?.let { logger.debug { "with status $status" } }
-        val statusList = if (status == null) {
-            listOf(DiscoveryQueueStatus.UNDISCOVERED, DiscoveryQueueStatus.DISCOVERED)
-        } else {
-            listOf(status)
-        }
+        val statusList =
+            if (status == null) {
+                listOf(DiscoveryQueueStatus.UNDISCOVERED, DiscoveryQueueStatus.DISCOVERED)
+            } else {
+                listOf(status)
+            }
         return database.from(DiscoveryQueueDOs)
             .leftJoin(BackfillDOs, on = DiscoveryQueueDOs.backfillId eq BackfillDOs.id)
             .joinReferencesAndSelect()
@@ -61,7 +67,10 @@ class DiscoveryQueueDAO(database: Database) : BaseInteropDAO<DiscoveryQueueDO, U
         return newUUID
     }
 
-    fun updateStatus(entryID: UUID, status: DiscoveryQueueStatus) {
+    fun updateStatus(
+        entryID: UUID,
+        status: DiscoveryQueueStatus,
+    ) {
         logger.info { "updating undiscoveredQueue $entryID with status $status" }
         database.update(DiscoveryQueueDOs) {
             set(it.status, status)

@@ -22,27 +22,30 @@ class DiscoveryQueueControllerTest {
     private val dao = mockk<DiscoveryQueueDAO>()
 
     private val controller = DiscoveryQueueController(backfillDao, dao)
-    private val mockBackfill = mockk<BackfillDO> {
-        every { tenantId } returns "da tenant"
-        every { startDate } returns LocalDate.of(2020, 9, 1)
-        every { endDate } returns LocalDate.of(2023, 9, 1)
-    }
+    private val mockBackfill =
+        mockk<BackfillDO> {
+            every { tenantId } returns "da tenant"
+            every { startDate } returns LocalDate.of(2020, 9, 1)
+            every { endDate } returns LocalDate.of(2023, 9, 1)
+        }
 
     @Test
     fun `getDiscoveryQueueEntries - works`() {
         val backfillID = UUID.randomUUID()
-        val mockEntry1 = mockk<DiscoveryQueueDO> {
-            every { backfillId } returns backfillID
-            every { entryId } returns UUID.randomUUID()
-            every { locationId } returns "123"
-            every { status } returns DiscoveryQueueStatus.DISCOVERED
-        }
-        val mockEntry2 = mockk<DiscoveryQueueDO> {
-            every { backfillId } returns backfillID
-            every { entryId } returns UUID.randomUUID()
-            every { locationId } returns "456"
-            every { status } returns DiscoveryQueueStatus.UNDISCOVERED
-        }
+        val mockEntry1 =
+            mockk<DiscoveryQueueDO> {
+                every { backfillId } returns backfillID
+                every { entryId } returns UUID.randomUUID()
+                every { locationId } returns "123"
+                every { status } returns DiscoveryQueueStatus.DISCOVERED
+            }
+        val mockEntry2 =
+            mockk<DiscoveryQueueDO> {
+                every { backfillId } returns backfillID
+                every { entryId } returns UUID.randomUUID()
+                every { locationId } returns "456"
+                every { status } returns DiscoveryQueueStatus.UNDISCOVERED
+            }
         every { dao.getByTenant(any(), any(), any()) } returns listOf(mockEntry1, mockEntry2)
         every { backfillDao.getByID(backfillID) } returns mockBackfill
 
@@ -55,12 +58,13 @@ class DiscoveryQueueControllerTest {
     fun `getDiscoveryQueueEntryById - works`() {
         val backfillID = UUID.randomUUID()
         val entryID = UUID.randomUUID()
-        val mockEntry = mockk<DiscoveryQueueDO> {
-            every { backfillId } returns backfillID
-            every { entryId } returns entryID
-            every { locationId } returns "123"
-            every { status } returns DiscoveryQueueStatus.DISCOVERED
-        }
+        val mockEntry =
+            mockk<DiscoveryQueueDO> {
+                every { backfillId } returns backfillID
+                every { entryId } returns entryID
+                every { locationId } returns "123"
+                every { status } returns DiscoveryQueueStatus.DISCOVERED
+            }
         every { dao.getByID(entryID) } returns mockEntry
         every { backfillDao.getByID(backfillID) } returns mockBackfill
 

@@ -9,7 +9,9 @@ import javax.validation.constraints.NotEmpty
 @ConstructorBinding
 data class BackfillClientConfig(
     @Valid
-    val server: Server = Server()
+    val server: Server = Server(),
 )
 
-data class Server(@NotEmpty val url: String = "")
+data class Server(
+    @NotEmpty val url: String = "",
+)

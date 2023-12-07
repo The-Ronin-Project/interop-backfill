@@ -5,6 +5,7 @@ import java.util.UUID
 
 interface BackfillDO : Entity<BackfillDO> {
     companion object : Entity.Factory<BackfillDO>()
+
     var backfillId: UUID
     var tenantId: String
     var startDate: LocalDate

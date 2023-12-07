@@ -20,7 +20,7 @@ import java.util.UUID
 @RestController
 class QueueController(
     private val backfillDAO: BackfillDAO,
-    private val backfillQueueDAO: BackfillQueueDAO
+    private val backfillQueueDAO: BackfillQueueDAO,
 ) : QueueApi {
     val logger = KotlinLogging.logger { }
 
@@ -33,9 +33,7 @@ class QueueController(
     }
 
     @PreAuthorize("hasAuthority('SCOPE_read:queue')")
-    override fun getQueueEntries(
-        tenantId: String
-    ): ResponseEntity<List<QueueEntry>> {
+    override fun getQueueEntries(tenantId: String): ResponseEntity<List<QueueEntry>> {
         val startedEntries = backfillQueueDAO.getByTenant(tenantId, status = BackfillStatus.STARTED)
         if (startedEntries.isNotEmpty()) {
             return ResponseEntity.ok(emptyList())
@@ -58,7 +56,7 @@ class QueueController(
     @PreAuthorize("hasAuthority('SCOPE_create:queue')")
     override fun postQueueEntry(
         backfillId: UUID,
-        newQueueEntry: List<NewQueueEntry>
+        newQueueEntry: List<NewQueueEntry>,
     ): ResponseEntity<List<GeneratedId>> {
         val currentPatients = backfillQueueDAO.getByBackfillID(backfillId).map { it.patientId }
         // Don't insert patients we already have and also filter out any duplicate patients sent
@@ -73,7 +71,10 @@ class QueueController(
 
     // PATCH
     @PreAuthorize("hasAuthority('SCOPE_update:queue')")
-    override fun updateQueueEntryByID(queueId: UUID, updateQueueEntry: UpdateQueueEntry): ResponseEntity<Boolean> {
+    override fun updateQueueEntryByID(
+        queueId: UUID,
+        updateQueueEntry: UpdateQueueEntry,
+    ): ResponseEntity<Boolean> {
         backfillQueueDAO.updateStatus(queueId, updateQueueEntry.status)
         return ResponseEntity.ok(true)
     }
@@ -94,7 +95,7 @@ class QueueController(
             startDate = backfillDO.startDate,
             endDate = backfillDO.endDate,
             status = this.status,
-            lastUpdated = this.updatedDateTime
+            lastUpdated = this.updatedDateTime,
         )
     }
 

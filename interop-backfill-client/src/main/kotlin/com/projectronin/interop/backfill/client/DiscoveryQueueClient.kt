@@ -26,7 +26,7 @@ class DiscoveryQueueClient(
     private val client: HttpClient,
     backfillClientConfig: BackfillClientConfig,
     @Qualifier("backfill")
-    private val authenticationService: InteropAuthenticationService
+    private val authenticationService: InteropAuthenticationService,
 ) {
     private val resourceUrl: String = "${backfillClientConfig.server.url}/discovery-queue"
 
@@ -36,19 +36,20 @@ class DiscoveryQueueClient(
     suspend fun getDiscoveryQueueEntries(
         tenantId: String,
         status: DiscoveryQueueStatus? = null,
-        backfillId: UUID? = null
+        backfillId: UUID? = null,
     ): List<DiscoveryQueueEntry> {
         val authentication = authenticationService.getAuthentication()
-        val response = client.request("BackFill", resourceUrl) { url ->
-            get(url) {
-                bearerAuth(authentication.accessToken)
-                accept(ContentType.Application.Json)
-                contentType(ContentType.Application.Json)
-                parameter("tenant_id", tenantId)
-                status?.let { parameter("status", status) }
-                backfillId?.let { parameter("backfill_id", backfillId) }
+        val response =
+            client.request("BackFill", resourceUrl) { url ->
+                get(url) {
+                    bearerAuth(authentication.accessToken)
+                    accept(ContentType.Application.Json)
+                    contentType(ContentType.Application.Json)
+                    parameter("tenant_id", tenantId)
+                    status?.let { parameter("status", status) }
+                    backfillId?.let { parameter("backfill_id", backfillId) }
+                }
             }
-        }
         return response.body()
     }
 
@@ -58,13 +59,14 @@ class DiscoveryQueueClient(
     suspend fun getDiscoveryQueueEntryById(discoveryQueueId: UUID): DiscoveryQueueEntry {
         val authentication = authenticationService.getAuthentication()
         val urlString = "$resourceUrl/$discoveryQueueId"
-        val response = client.request("BackFill", urlString) { url ->
-            get(url) {
-                bearerAuth(authentication.accessToken)
-                accept(ContentType.Application.Json)
-                contentType(ContentType.Application.Json)
+        val response =
+            client.request("BackFill", urlString) { url ->
+                get(url) {
+                    bearerAuth(authentication.accessToken)
+                    accept(ContentType.Application.Json)
+                    contentType(ContentType.Application.Json)
+                }
             }
-        }
         return response.body()
     }
 
@@ -73,18 +75,19 @@ class DiscoveryQueueClient(
      */
     suspend fun updateDiscoveryQueueEntryByID(
         discoveryQueueId: UUID,
-        updateDiscoveryEntry: UpdateDiscoveryEntry
+        updateDiscoveryEntry: UpdateDiscoveryEntry,
     ): Boolean {
         val authentication = authenticationService.getAuthentication()
         val urlString = "$resourceUrl/$discoveryQueueId"
-        val response = client.request("BackFill", urlString) { url ->
-            patch(url) {
-                bearerAuth(authentication.accessToken)
-                accept(ContentType.Application.Json)
-                contentType(ContentType.Application.Json)
-                setBody(updateDiscoveryEntry)
+        val response =
+            client.request("BackFill", urlString) { url ->
+                patch(url) {
+                    bearerAuth(authentication.accessToken)
+                    accept(ContentType.Application.Json)
+                    contentType(ContentType.Application.Json)
+                    setBody(updateDiscoveryEntry)
+                }
             }
-        }
         return response.body()
     }
 
@@ -95,13 +98,14 @@ class DiscoveryQueueClient(
     suspend fun deleteDiscoveryQueueEntryById(discoveryQueueId: UUID): Boolean {
         val authentication = authenticationService.getAuthentication()
         val urlString = "$resourceUrl/$discoveryQueueId"
-        val response = client.request("BackFill", urlString) { url ->
-            delete(url) {
-                bearerAuth(authentication.accessToken)
-                accept(ContentType.Application.Json)
-                contentType(ContentType.Application.Json)
+        val response =
+            client.request("BackFill", urlString) { url ->
+                delete(url) {
+                    bearerAuth(authentication.accessToken)
+                    accept(ContentType.Application.Json)
+                    contentType(ContentType.Application.Json)
+                }
             }
-        }
         return response.body()
     }
 }

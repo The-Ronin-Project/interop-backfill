@@ -7,6 +7,7 @@ import java.util.UUID
 
 interface BackfillQueueDO : Entity<BackfillQueueDO> {
     companion object : Entity.Factory<BackfillQueueDO>()
+
     var backfillId: UUID
     var entryId: UUID
     var patientId: String

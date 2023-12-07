@@ -29,10 +29,11 @@ class CompletenessDAOTest {
     @ExpectedDataSet(value = ["/dbunit/completeness/SingleCompletenessEntry.yaml"], orderBy = ["backfill_id", "patient_id"])
     fun `insert works`() {
         val dao = CompletenessDAO(KtormHelper.database())
-        val newEntry = CompletenessDO {
-            queueId = UUID.fromString("5f2139f1-3522-4746-8eb9-5607b9e0b663")
-            lastSeen = OffsetDateTime.of(2023, 10, 27, 12, 12, 12, 0, ZoneOffset.UTC)
-        }
+        val newEntry =
+            CompletenessDO {
+                queueId = UUID.fromString("5f2139f1-3522-4746-8eb9-5607b9e0b663")
+                lastSeen = OffsetDateTime.of(2023, 10, 27, 12, 12, 12, 0, ZoneOffset.UTC)
+            }
         dao.create(newEntry)
     }
 

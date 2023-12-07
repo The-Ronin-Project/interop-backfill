@@ -25,16 +25,22 @@ import java.util.UUID
 @Repository
 class BackfillQueueDAO(database: Database) : BaseInteropDAO<BackfillQueueDO, UUID>(database) {
     override val primaryKeyColumn = BackfillQueueDOs.entryId
+
     fun getByBackfillID(backfillId: UUID): List<BackfillQueueDO> {
         return database.valueLookup(backfillId, BackfillQueueDOs.backfillId)
     }
 
-    fun getByTenant(tenant: String, status: BackfillStatus? = null, backfillId: UUID? = null): List<BackfillQueueDO> {
-        val statusList = if (status == null) {
-            listOf(BackfillStatus.COMPLETED, BackfillStatus.STARTED, BackfillStatus.NOT_STARTED)
-        } else {
-            listOf(status)
-        }
+    fun getByTenant(
+        tenant: String,
+        status: BackfillStatus? = null,
+        backfillId: UUID? = null,
+    ): List<BackfillQueueDO> {
+        val statusList =
+            if (status == null) {
+                listOf(BackfillStatus.COMPLETED, BackfillStatus.STARTED, BackfillStatus.NOT_STARTED)
+            } else {
+                listOf(status)
+            }
         return database.from(BackfillQueueDOs)
             .leftJoin(BackfillDOs, on = BackfillQueueDOs.backfillId eq BackfillDOs.id)
             .joinReferencesAndSelect()
@@ -68,7 +74,10 @@ class BackfillQueueDAO(database: Database) : BaseInteropDAO<BackfillQueueDO, UUI
         return newUUID
     }
 
-    fun updateStatus(entryID: UUID, status: BackfillStatus) {
+    fun updateStatus(
+        entryID: UUID,
+        status: BackfillStatus,
+    ) {
         database.update(BackfillQueueDOs) {
             set(it.status, status)
             set(it.updatedDateTime, OffsetDateTime.now())

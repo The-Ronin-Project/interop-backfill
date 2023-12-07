@@ -26,7 +26,7 @@ class BackfillClient(
     private val client: HttpClient,
     backfillClientConfig: BackfillClientConfig,
     @Qualifier("backfill")
-    private val authenticationService: InteropAuthenticationService
+    private val authenticationService: InteropAuthenticationService,
 ) {
     private val resourceUrl: String = "${backfillClientConfig.server.url}/backfill"
 
@@ -36,13 +36,14 @@ class BackfillClient(
     suspend fun getBackfillById(backfillId: UUID): Backfill {
         val authentication = authenticationService.getAuthentication()
         val urlString = "$resourceUrl/$backfillId"
-        val response = client.request("BackFill", urlString) { url ->
-            get(url) {
-                bearerAuth(authentication.accessToken)
-                accept(ContentType.Application.Json)
-                contentType(ContentType.Application.Json)
+        val response =
+            client.request("BackFill", urlString) { url ->
+                get(url) {
+                    bearerAuth(authentication.accessToken)
+                    accept(ContentType.Application.Json)
+                    contentType(ContentType.Application.Json)
+                }
             }
-        }
         return response.body()
     }
 
@@ -51,14 +52,15 @@ class BackfillClient(
      */
     suspend fun getBackfills(tenantId: String): List<Backfill> {
         val authentication = authenticationService.getAuthentication()
-        val response = client.request("BackFill", resourceUrl) { url ->
-            get(url) {
-                bearerAuth(authentication.accessToken)
-                accept(ContentType.Application.Json)
-                contentType(ContentType.Application.Json)
-                parameter("tenant_id", tenantId)
+        val response =
+            client.request("BackFill", resourceUrl) { url ->
+                get(url) {
+                    bearerAuth(authentication.accessToken)
+                    accept(ContentType.Application.Json)
+                    contentType(ContentType.Application.Json)
+                    parameter("tenant_id", tenantId)
+                }
             }
-        }
         return response.body()
     }
 
@@ -69,16 +71,17 @@ class BackfillClient(
     suspend fun postBackfill(newBackfill: NewBackfill): GeneratedId {
         val authentication = authenticationService.getAuthentication()
 
-        val response = client.request("BackFill", resourceUrl) { url ->
-            post(url) {
-                bearerAuth(authentication.accessToken)
-                accept(ContentType.Application.Json)
-                contentType(ContentType.Application.Json)
-                setBody(newBackfill)
-                accept(ContentType.Application.Json)
-                contentType(ContentType.Application.Json)
+        val response =
+            client.request("BackFill", resourceUrl) { url ->
+                post(url) {
+                    bearerAuth(authentication.accessToken)
+                    accept(ContentType.Application.Json)
+                    contentType(ContentType.Application.Json)
+                    setBody(newBackfill)
+                    accept(ContentType.Application.Json)
+                    contentType(ContentType.Application.Json)
+                }
             }
-        }
         return response.body()
     }
 
@@ -90,13 +93,14 @@ class BackfillClient(
     suspend fun deleteBackfill(backfillId: UUID): Boolean {
         val authentication = authenticationService.getAuthentication()
         val urlString = "$resourceUrl/$backfillId"
-        val response = client.request("BackFill", urlString) { url ->
-            delete(url) {
-                bearerAuth(authentication.accessToken)
-                accept(ContentType.Application.Json)
-                contentType(ContentType.Application.Json)
+        val response =
+            client.request("BackFill", urlString) { url ->
+                delete(url) {
+                    bearerAuth(authentication.accessToken)
+                    accept(ContentType.Application.Json)
+                    contentType(ContentType.Application.Json)
+                }
             }
-        }
         return response.body()
     }
 }

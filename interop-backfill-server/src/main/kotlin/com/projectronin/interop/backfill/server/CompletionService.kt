@@ -27,7 +27,7 @@ class CompletionService(
     val queueDAO: BackfillQueueDAO,
     val completenessDAO: CompletenessDAO,
     @Value("\${backfill.resolver.wait.ms:#{null}}")
-    timeToWaitString: String?
+    timeToWaitString: String?,
 ) {
     val logger = KotlinLogging.logger { }
     val timeToWait: Long = timeToWaitString?.toLong() ?: 20.minutes.inWholeMilliseconds
@@ -35,19 +35,20 @@ class CompletionService(
     @KafkaListener(
         topicPattern = "oci.us-phoenix-1.interop-mirth.*-publish-adhoc.v1",
         groupId = "interop-backfill_group",
-        properties = ["metadata.max.age.ms:\${backfill.kafka.listener.refresh.ms:300000}"]
+        properties = ["metadata.max.age.ms:\${backfill.kafka.listener.refresh.ms:300000}"],
     )
     fun eventConsumer(
         message: String,
-        @Header(KafkaHeaders.RECEIVED_TIMESTAMP) timeStamp: Long
+        @Header(KafkaHeaders.RECEIVED_TIMESTAMP) timeStamp: Long,
     ) {
         logger.debug { "received message $message with received time of $timeStamp" }
-        val event = try {
-            JacksonUtil.readJsonObject(message, InteropResourcePublishV1::class)
-        } catch (e: Exception) {
-            logger.error(e) { "Failed to parse as InteropResourcePublishV1" }
-            return
-        }
+        val event =
+            try {
+                JacksonUtil.readJsonObject(message, InteropResourcePublishV1::class)
+            } catch (e: Exception) {
+                logger.error(e) { "Failed to parse as InteropResourcePublishV1" }
+                return
+            }
 
         // don't bother processing non-backfill events
         if (event.dataTrigger != InteropResourcePublishV1.DataTrigger.backfill) return
@@ -55,11 +56,12 @@ class CompletionService(
 
         val tenant = event.tenantId
         logger.debug { "searching for queue entries with tenant $tenant, backfillId: ${backfillInfo.backfillId}" }
-        val queueEntries = queueDAO.getByTenant(
-            tenant = tenant,
-            backfillId = UUID.fromString(backfillInfo.backfillId),
-            status = BackfillStatus.STARTED
-        )
+        val queueEntries =
+            queueDAO.getByTenant(
+                tenant = tenant,
+                backfillId = UUID.fromString(backfillInfo.backfillId),
+                status = BackfillStatus.STARTED,
+            )
         if (queueEntries.isEmpty()) return
         logger.debug { "Found ${queueEntries.size} entries" }
 
@@ -68,15 +70,17 @@ class CompletionService(
             if (event.resourceType == ResourceType.Patient) {
                 JacksonUtil.readJsonObject(event.resourceJson, Patient::class).findFhirId()
             } else {
-                val patientUpstreamReference = event.metadata.upstreamReferences?.firstOrNull {
-                    it.resourceType == ResourceType.Patient
-                }
+                val patientUpstreamReference =
+                    event.metadata.upstreamReferences?.firstOrNull {
+                        it.resourceType == ResourceType.Patient
+                    }
                 // these references are localized :(
                 patientUpstreamReference?.id?.removePrefix("$tenant-")
             }
-        val entry = queueEntries
-            .find { it.patientId == eventPatientReference }
-            ?: return
+        val entry =
+            queueEntries
+                .find { it.patientId == eventPatientReference }
+                ?: return
 
         logger.debug { "Found matching queue entry with id ${entry.entryId}" }
 
@@ -89,14 +93,14 @@ class CompletionService(
                 CompletenessDO {
                     queueId = entry.entryId
                     lastSeen = eventCreatedTime
-                }
+                },
             )
             // if we've got an existing entry update it, unless for some reason we're reprocessing old events
         } else if (existingCompletenessDO.lastSeen < eventCreatedTime) {
             logger.debug { "Updating existing entry" }
             completenessDAO.update(
                 existingCompletenessDO.queueId,
-                lastSeen = eventCreatedTime
+                lastSeen = eventCreatedTime,
             )
         }
     }
@@ -104,10 +108,11 @@ class CompletionService(
     @Scheduled(fixedRateString = "\${backfill.resolver.runner.ms:600000}")
     fun resolve() {
         logger.debug { "Attempting to resolve" }
-        val okToResolveTime = OffsetDateTime.now().minusSeconds(
-            // no minusMilliseconds, so convert to seconds
-            timeToWait.milliseconds.inWholeSeconds
-        )
+        val okToResolveTime =
+            OffsetDateTime.now().minusSeconds(
+                // no minusMilliseconds, so convert to seconds
+                timeToWait.milliseconds.inWholeSeconds,
+            )
         logger.debug { okToResolveTime }
         val inProgressEntries = queueDAO.getAllInProgressEntries()
         logger.debug { "Found ${inProgressEntries.size} to potentially resolve" }

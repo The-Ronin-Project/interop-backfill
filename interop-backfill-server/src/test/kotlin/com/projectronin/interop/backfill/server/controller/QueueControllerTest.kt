@@ -24,29 +24,32 @@ class QueueControllerTest {
     private val dao = mockk<BackfillQueueDAO>()
 
     private val controller = QueueController(backfillDao, dao)
-    private val mockBackfill = mockk<BackfillDO> {
-        every { tenantId } returns "da tenant"
-        every { startDate } returns LocalDate.of(2020, 9, 1)
-        every { endDate } returns LocalDate.of(2023, 9, 1)
-    }
+    private val mockBackfill =
+        mockk<BackfillDO> {
+            every { tenantId } returns "da tenant"
+            every { startDate } returns LocalDate.of(2020, 9, 1)
+            every { endDate } returns LocalDate.of(2023, 9, 1)
+        }
 
     @Test
     fun `getEntriesByBackfillID - works`() {
         val backfillID = UUID.randomUUID()
-        val mockEntry1 = mockk<BackfillQueueDO> {
-            every { backfillId } returns backfillID
-            every { entryId } returns UUID.randomUUID()
-            every { patientId } returns "123"
-            every { status } returns BackfillStatus.NOT_STARTED
-            every { updatedDateTime } returns OffsetDateTime.now()
-        }
-        val mockEntry2 = mockk<BackfillQueueDO> {
-            every { backfillId } returns backfillID
-            every { entryId } returns UUID.randomUUID()
-            every { patientId } returns "456"
-            every { status } returns BackfillStatus.NOT_STARTED
-            every { updatedDateTime } returns OffsetDateTime.now()
-        }
+        val mockEntry1 =
+            mockk<BackfillQueueDO> {
+                every { backfillId } returns backfillID
+                every { entryId } returns UUID.randomUUID()
+                every { patientId } returns "123"
+                every { status } returns BackfillStatus.NOT_STARTED
+                every { updatedDateTime } returns OffsetDateTime.now()
+            }
+        val mockEntry2 =
+            mockk<BackfillQueueDO> {
+                every { backfillId } returns backfillID
+                every { entryId } returns UUID.randomUUID()
+                every { patientId } returns "456"
+                every { status } returns BackfillStatus.NOT_STARTED
+                every { updatedDateTime } returns OffsetDateTime.now()
+            }
         every { dao.getByBackfillID(backfillID) } returns listOf(mockEntry1, mockEntry2)
         every { backfillDao.getByID(backfillID) } returns mockBackfill
         val result = controller.getEntriesByBackfillID(backfillID)
@@ -57,20 +60,22 @@ class QueueControllerTest {
     @Test
     fun `getQueueEntries - works`() {
         val backfillID = UUID.randomUUID()
-        val mockEntry1 = mockk<BackfillQueueDO> {
-            every { backfillId } returns backfillID
-            every { entryId } returns UUID.randomUUID()
-            every { patientId } returns "123"
-            every { status } returns BackfillStatus.NOT_STARTED
-            every { updatedDateTime } returns OffsetDateTime.now()
-        }
-        val mockEntry2 = mockk<BackfillQueueDO> {
-            every { backfillId } returns backfillID
-            every { entryId } returns UUID.randomUUID()
-            every { patientId } returns "456"
-            every { status } returns BackfillStatus.NOT_STARTED
-            every { updatedDateTime } returns OffsetDateTime.now()
-        }
+        val mockEntry1 =
+            mockk<BackfillQueueDO> {
+                every { backfillId } returns backfillID
+                every { entryId } returns UUID.randomUUID()
+                every { patientId } returns "123"
+                every { status } returns BackfillStatus.NOT_STARTED
+                every { updatedDateTime } returns OffsetDateTime.now()
+            }
+        val mockEntry2 =
+            mockk<BackfillQueueDO> {
+                every { backfillId } returns backfillID
+                every { entryId } returns UUID.randomUUID()
+                every { patientId } returns "456"
+                every { status } returns BackfillStatus.NOT_STARTED
+                every { updatedDateTime } returns OffsetDateTime.now()
+            }
         every { dao.getByTenant("tenant", status = BackfillStatus.STARTED) } returns emptyList()
         every { dao.getByTenant("tenant", status = BackfillStatus.NOT_STARTED) } returns listOf(mockEntry1, mockEntry2)
         every { backfillDao.getByID(backfillID) } returns mockBackfill
@@ -83,13 +88,14 @@ class QueueControllerTest {
     @Test
     fun `getQueueEntries - returns nothing if there are still in progress entries`() {
         val backfillID = UUID.randomUUID()
-        val mockEntry = mockk<BackfillQueueDO> {
-            every { backfillId } returns backfillID
-            every { entryId } returns UUID.randomUUID()
-            every { patientId } returns "123"
-            every { status } returns BackfillStatus.STARTED
-            every { updatedDateTime } returns OffsetDateTime.now()
-        }
+        val mockEntry =
+            mockk<BackfillQueueDO> {
+                every { backfillId } returns backfillID
+                every { entryId } returns UUID.randomUUID()
+                every { patientId } returns "123"
+                every { status } returns BackfillStatus.STARTED
+                every { updatedDateTime } returns OffsetDateTime.now()
+            }
         every { dao.getByTenant("tenant", status = BackfillStatus.STARTED) } returns listOf(mockEntry)
         val result = controller.getQueueEntries("tenant")
         assertEquals(HttpStatus.OK, result.statusCode)
@@ -100,13 +106,14 @@ class QueueControllerTest {
     fun `getQueueEntryById - works`() {
         val backfillID = UUID.randomUUID()
         val entryID = UUID.randomUUID()
-        val mockEntry = mockk<BackfillQueueDO> {
-            every { backfillId } returns backfillID
-            every { entryId } returns entryID
-            every { patientId } returns "123"
-            every { status } returns BackfillStatus.NOT_STARTED
-            every { updatedDateTime } returns OffsetDateTime.now()
-        }
+        val mockEntry =
+            mockk<BackfillQueueDO> {
+                every { backfillId } returns backfillID
+                every { entryId } returns entryID
+                every { patientId } returns "123"
+                every { status } returns BackfillStatus.NOT_STARTED
+                every { updatedDateTime } returns OffsetDateTime.now()
+            }
 
         every { dao.getByID(entryID) } returns mockEntry
         every { backfillDao.getByID(backfillID) } returns mockBackfill
@@ -128,14 +135,16 @@ class QueueControllerTest {
         val backfillID = UUID.randomUUID()
         val entryID1 = UUID.randomUUID()
         val entryID2 = UUID.randomUUID()
-        val newQueueEntry1 = NewQueueEntry(
-            backfillId = backfillID,
-            patientId = "123"
-        )
-        val newQueueEntry2 = NewQueueEntry(
-            backfillId = backfillID,
-            patientId = "456"
-        )
+        val newQueueEntry1 =
+            NewQueueEntry(
+                backfillId = backfillID,
+                patientId = "123",
+            )
+        val newQueueEntry2 =
+            NewQueueEntry(
+                backfillId = backfillID,
+                patientId = "456",
+            )
 
         every { dao.getByBackfillID(backfillID) } returns emptyList()
         every { dao.insert(any()) } returns entryID1 andThen entryID2
@@ -151,25 +160,30 @@ class QueueControllerTest {
         val backfillID = UUID.randomUUID()
         val entryID1 = UUID.randomUUID()
         val entryID2 = UUID.randomUUID()
-        val newQueueEntry1 = NewQueueEntry(
-            backfillId = backfillID,
-            patientId = "123"
-        )
-        val newQueueEntry2 = NewQueueEntry(
-            backfillId = backfillID,
-            patientId = "456"
-        )
-        val newQueueEntry3 = NewQueueEntry(
-            backfillId = backfillID,
-            patientId = "456"
-        )
-        val newQueueEntry4 = NewQueueEntry(
-            backfillId = backfillID,
-            patientId = "existing"
-        )
-        val mockDO = mockk<BackfillQueueDO> {
-            every { patientId } returns "existing"
-        }
+        val newQueueEntry1 =
+            NewQueueEntry(
+                backfillId = backfillID,
+                patientId = "123",
+            )
+        val newQueueEntry2 =
+            NewQueueEntry(
+                backfillId = backfillID,
+                patientId = "456",
+            )
+        val newQueueEntry3 =
+            NewQueueEntry(
+                backfillId = backfillID,
+                patientId = "456",
+            )
+        val newQueueEntry4 =
+            NewQueueEntry(
+                backfillId = backfillID,
+                patientId = "existing",
+            )
+        val mockDO =
+            mockk<BackfillQueueDO> {
+                every { patientId } returns "existing"
+            }
 
         every { dao.getByBackfillID(backfillID) } returns listOf(mockDO)
         every { dao.insert(any()) } returns entryID1 andThen entryID2

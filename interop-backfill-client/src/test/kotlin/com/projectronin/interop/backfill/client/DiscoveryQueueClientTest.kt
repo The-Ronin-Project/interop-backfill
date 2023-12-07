@@ -18,27 +18,31 @@ import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import java.time.LocalDate
 import java.util.UUID
+
 class DiscoveryQueueClientTest {
     private val mockWebServer = MockWebServer()
     private val hostUrl = mockWebServer.url("/test")
     private val authenticationToken = "123456"
-    private val authenticationService = mockk<InteropAuthenticationService> {
-        every { getAuthentication() } returns mockk {
-            every { accessToken } returns authenticationToken
+    private val authenticationService =
+        mockk<InteropAuthenticationService> {
+            every { getAuthentication() } returns
+                mockk {
+                    every { accessToken } returns authenticationToken
+                }
         }
-    }
     private val httpClient = HttpSpringConfig().getHttpClient()
 
     private val client = DiscoveryQueueClient(httpClient, BackfillClientConfig(Server(hostUrl.toString())), authenticationService)
-    private val expectedDiscoveryEntry = DiscoveryQueueEntry(
-        id = UUID.randomUUID(),
-        backfillId = UUID.randomUUID(),
-        locationId = "123",
-        startDate = LocalDate.now(),
-        endDate = LocalDate.now(),
-        tenantId = "123",
-        status = DiscoveryQueueStatus.UNDISCOVERED
-    )
+    private val expectedDiscoveryEntry =
+        DiscoveryQueueEntry(
+            id = UUID.randomUUID(),
+            backfillId = UUID.randomUUID(),
+            locationId = "123",
+            startDate = LocalDate.now(),
+            endDate = LocalDate.now(),
+            tenantId = "123",
+            status = DiscoveryQueueStatus.UNDISCOVERED,
+        )
 
     @Test
     fun `getDiscoveryQueueEntries - works`() {
@@ -47,20 +51,24 @@ class DiscoveryQueueClientTest {
             MockResponse()
                 .setResponseCode(HttpStatusCode.OK.value)
                 .setBody(expectedDiscoveryEntryJson)
-                .setHeader("Content-Type", "application/json")
+                .setHeader("Content-Type", "application/json"),
         )
 
-        val response = runBlocking {
-            client.getDiscoveryQueueEntries(
-                "tenant",
-                DiscoveryQueueStatus.DISCOVERED,
-                UUID.fromString("1d531a31-49a9-af74-03d5-573b456efca5")
-            )
-        }
+        val response =
+            runBlocking {
+                client.getDiscoveryQueueEntries(
+                    "tenant",
+                    DiscoveryQueueStatus.DISCOVERED,
+                    UUID.fromString("1d531a31-49a9-af74-03d5-573b456efca5"),
+                )
+            }
         assertEquals(listOf(expectedDiscoveryEntry), response)
         val request = mockWebServer.takeRequest()
         assertEquals("GET", request.method)
-        assertEquals(true, request.path?.endsWith("/discovery-queue?tenant_id=tenant&status=DISCOVERED&backfill_id=1d531a31-49a9-af74-03d5-573b456efca5"))
+        assertEquals(
+            true,
+            request.path?.endsWith("/discovery-queue?tenant_id=tenant&status=DISCOVERED&backfill_id=1d531a31-49a9-af74-03d5-573b456efca5"),
+        )
         assertEquals("Bearer $authenticationToken", request.getHeader("Authorization"))
     }
 
@@ -71,14 +79,15 @@ class DiscoveryQueueClientTest {
             MockResponse()
                 .setResponseCode(HttpStatusCode.OK.value)
                 .setBody(expectedDiscoveryEntryJson)
-                .setHeader("Content-Type", "application/json")
+                .setHeader("Content-Type", "application/json"),
         )
 
-        val response = runBlocking {
-            client.getDiscoveryQueueEntryById(
-                UUID.fromString("1d531a31-49a9-af74-03d5-573b456efca5")
-            )
-        }
+        val response =
+            runBlocking {
+                client.getDiscoveryQueueEntryById(
+                    UUID.fromString("1d531a31-49a9-af74-03d5-573b456efca5"),
+                )
+            }
         assertEquals(expectedDiscoveryEntry, response)
         val request = mockWebServer.takeRequest()
         assertEquals("GET", request.method)
@@ -94,15 +103,16 @@ class DiscoveryQueueClientTest {
             MockResponse()
                 .setResponseCode(HttpStatusCode.OK.value)
                 .setBody("true")
-                .setHeader("Content-Type", "application/json")
+                .setHeader("Content-Type", "application/json"),
         )
 
-        val response = runBlocking {
-            client.updateDiscoveryQueueEntryByID(
-                UUID.fromString("1d531a31-49a9-af74-03d5-573b456efca5"),
-                updateDiscoveryEntry
-            )
-        }
+        val response =
+            runBlocking {
+                client.updateDiscoveryQueueEntryByID(
+                    UUID.fromString("1d531a31-49a9-af74-03d5-573b456efca5"),
+                    updateDiscoveryEntry,
+                )
+            }
         assertEquals(true, response)
         val request = mockWebServer.takeRequest()
         assertEquals("PATCH", request.method)
@@ -117,12 +127,13 @@ class DiscoveryQueueClientTest {
             MockResponse()
                 .setResponseCode(HttpStatusCode.OK.value)
                 .setBody("true")
-                .setHeader("Content-Type", "application/json")
+                .setHeader("Content-Type", "application/json"),
         )
 
-        val response = runBlocking {
-            client.deleteDiscoveryQueueEntryById(UUID.fromString("1d531a31-49a9-af74-03d5-573b456efca5"))
-        }
+        val response =
+            runBlocking {
+                client.deleteDiscoveryQueueEntryById(UUID.fromString("1d531a31-49a9-af74-03d5-573b456efca5"))
+            }
         assertEquals(true, response)
         val request = mockWebServer.takeRequest()
         assertEquals("DELETE", request.method)

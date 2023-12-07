@@ -16,7 +16,6 @@ import org.springframework.context.annotation.Primary
 @ConfigurationPropertiesScan(basePackageClasses = [BackfillClientConfig::class])
 @Import(HttpSpringConfig::class)
 class BackfillClientSpringConfig {
-
     @Bean
     @Primary
     @ConfigurationProperties(prefix = "backfill.auth")
@@ -29,7 +28,7 @@ class BackfillClientSpringConfig {
     fun authService(
         httpClient: HttpClient,
         @Qualifier("authConfig")
-        authenticationConfig: AuthenticationConfig
+        authenticationConfig: AuthenticationConfig,
     ): InteropAuthenticationService {
         return InteropAuthenticationService(httpClient, authenticationConfig)
     }

@@ -16,7 +16,6 @@ import java.util.UUID
 
 @LiquibaseTest(changeLog = "backfill/db/changelog/backfill.db.changelog-master.yaml")
 class DiscoveryQueueDAOTest {
-
     @DBRiderConnection
     lateinit var connectionHolder: ConnectionHolder
 
@@ -25,11 +24,12 @@ class DiscoveryQueueDAOTest {
     @ExpectedDataSet(value = ["/dbunit/discoveryqueue/SingleQueueEntry.yaml"], ignoreCols = ["entry_id"])
     fun `insert works`() {
         val dao = DiscoveryQueueDAO(KtormHelper.database())
-        val newEntry = DiscoveryQueueDO {
-            backfillId = UUID.fromString("b4e8e80a-297a-4b19-bd59-4b8072db9cc4")
-            locationId = "123"
-            status = DiscoveryQueueStatus.UNDISCOVERED
-        }
+        val newEntry =
+            DiscoveryQueueDO {
+                backfillId = UUID.fromString("b4e8e80a-297a-4b19-bd59-4b8072db9cc4")
+                locationId = "123"
+                status = DiscoveryQueueStatus.UNDISCOVERED
+            }
         val uuid = dao.insert(newEntry)
         assertNotNull(uuid)
     }

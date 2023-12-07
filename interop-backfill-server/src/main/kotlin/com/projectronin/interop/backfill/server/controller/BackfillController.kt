@@ -18,11 +18,12 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
 import org.springframework.web.bind.annotation.RestController
 import java.util.UUID
+
 @RestController
 class BackfillController(
     private val backfillDAO: BackfillDAO,
     private val backfillQueueDAO: BackfillQueueDAO,
-    private val discoveryQueueDAO: DiscoveryQueueDAO
+    private val discoveryQueueDAO: DiscoveryQueueDAO,
 ) : BackfillApi {
     val logger = KotlinLogging.logger { }
 
@@ -68,19 +69,23 @@ class BackfillController(
         return this.toModel(discoveruQueueEntries, queueEntries)
     }
 
-    fun BackfillDO.toModel(discoveryEntries: List<DiscoveryQueueDO>, backfillQueueEntries: List<BackfillQueueDO>): Backfill {
+    fun BackfillDO.toModel(
+        discoveryEntries: List<DiscoveryQueueDO>,
+        backfillQueueEntries: List<BackfillQueueDO>,
+    ): Backfill {
         val locationIds = discoveryEntries.map { it.locationId }
         val statusList = backfillQueueEntries.associateBy { it.status }
-        val status = when {
-            // it's deleted
-            this.isDeleted -> BackfillStatus.DELETED
-            // no entries, hasn't made it through discovery yet
-            statusList.keys.isEmpty() -> BackfillStatus.NOT_STARTED
-            // all entries are the same value, that's the backfill status
-            statusList.keys.size == 1 -> statusList.keys.first()
-            // some entries are different must mean that we've got a backfill in progress
-            else -> BackfillStatus.STARTED
-        }
+        val status =
+            when {
+                // it's deleted
+                this.isDeleted -> BackfillStatus.DELETED
+                // no entries, hasn't made it through discovery yet
+                statusList.keys.isEmpty() -> BackfillStatus.NOT_STARTED
+                // all entries are the same value, that's the backfill status
+                statusList.keys.size == 1 -> statusList.keys.first()
+                // some entries are different must mean that we've got a backfill in progress
+                else -> BackfillStatus.STARTED
+            }
         val lastUpdated = backfillQueueEntries.maxOfOrNull { it.updatedDateTime }
 
         return Backfill(
@@ -90,7 +95,7 @@ class BackfillController(
             endDate = this.endDate,
             status = status,
             locationIds = locationIds,
-            lastUpdated = lastUpdated
+            lastUpdated = lastUpdated,
         )
     }
 

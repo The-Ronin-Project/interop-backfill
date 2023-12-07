@@ -23,7 +23,10 @@ class CompletenessDAO(database: Database) : BaseInteropDAO<CompletenessDO, UUID>
         }
     }
 
-    fun update(entryID: UUID, lastSeen: OffsetDateTime) {
+    fun update(
+        entryID: UUID,
+        lastSeen: OffsetDateTime,
+    ) {
         database.update(CompletenessDOs) {
             set(it.lastSeen, lastSeen)
             where { it.queueId eq entryID }

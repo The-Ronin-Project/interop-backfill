@@ -58,11 +58,12 @@ class BackfillDAOTest {
     @ExpectedDataSet(value = ["/dbunit/BaseBackfill.yaml"], ignoreCols = ["backfill_id"])
     fun `insert works`() {
         val dao = BackfillDAO(KtormHelper.database())
-        val newBackfill = BackfillDO {
-            tenantId = "tenant1"
-            startDate = LocalDate.of(2022, 8, 1)
-            endDate = LocalDate.of(2023, 9, 1)
-        }
+        val newBackfill =
+            BackfillDO {
+                tenantId = "tenant1"
+                startDate = LocalDate.of(2022, 8, 1)
+                endDate = LocalDate.of(2023, 9, 1)
+            }
         val uuid = dao.insert(newBackfill)
         assertNotNull(uuid)
     }

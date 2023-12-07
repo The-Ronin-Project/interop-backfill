@@ -6,6 +6,7 @@ import java.util.UUID
 
 interface DiscoveryQueueDO : Entity<DiscoveryQueueDO> {
     companion object : Entity.Factory<DiscoveryQueueDO>()
+
     var backfillId: UUID
     var entryId: UUID
     var locationId: String

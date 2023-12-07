@@ -6,6 +6,7 @@ import java.util.UUID
 
 interface CompletenessDO : Entity<CompletenessDO> {
     companion object : Entity.Factory<CompletenessDO>()
+
     var queueId: UUID
     var lastSeen: OffsetDateTime
 }
