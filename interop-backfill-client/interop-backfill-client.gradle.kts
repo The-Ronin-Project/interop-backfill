@@ -25,6 +25,7 @@ openApiGenerate {
     outputDir.set("$buildDir/generated")
     configOptions.set(
         mapOf(
+            "useSpringBoot3" to "true",
             "enumPropertyNaming" to "UPPERCASE",
             "packageName" to "com.projectronin.interop.backfill.client.generated",
             "gradleBuildFile" to "false",

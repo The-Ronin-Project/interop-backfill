@@ -11,8 +11,7 @@ dependencies {
     implementation(libs.spring.boot.starter.oauth)
     implementation(libs.spring.boot.starter.web)
 
-    // implementation(libs.bundles.spring.boot.starter)
-    implementation(libs.spring.boot.kafka)
+    implementation(libs.spring.kafka)
 
     implementation(libs.interop.common)
     implementation(libs.interop.commonJackson)
@@ -63,6 +62,7 @@ openApiGenerate {
     ignoreFileOverride.set("$projectDir/.openapi-generator-ignore")
     configOptions.set(
         mapOf(
+            "useSpringBoot3" to "true",
             "enumPropertyNaming" to "UPPERCASE",
             "interfaceOnly" to "true",
             "useTags" to "true",

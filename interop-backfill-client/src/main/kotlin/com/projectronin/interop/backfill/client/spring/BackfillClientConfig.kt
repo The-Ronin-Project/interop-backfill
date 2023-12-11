@@ -1,12 +1,10 @@
 package com.projectronin.interop.backfill.client.spring
 
+import jakarta.validation.Valid
+import jakarta.validation.constraints.NotEmpty
 import org.springframework.boot.context.properties.ConfigurationProperties
-import org.springframework.boot.context.properties.ConstructorBinding
-import javax.validation.Valid
-import javax.validation.constraints.NotEmpty
 
 @ConfigurationProperties(prefix = "backfill")
-@ConstructorBinding
 data class BackfillClientConfig(
     @Valid
     val server: Server = Server(),

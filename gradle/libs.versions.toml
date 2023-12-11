@@ -1,30 +1,28 @@
 [versions]
 dbrider = "1.39.0"
 idea-ext = "1.1.7"
-interop-common = "3.13.4"
+interop-common = "4.0.0"
 interop-event-internal = "1.2.3"
-interop-fhir = "8.11.0"
-interop-gradle = "3.4.0"
-interop-kafka = "8.5.2"
-# @pin until Spring Boot 3
-jakarta = "2.0.2"
+interop-fhir = "9.0.0"
+interop-gradle = "4.0.0"
+interop-kafka = "9.0.0"
+jakarta = "3.0.2"
 # @keep for forcing version
 kotlin = "1.9.0"
 kotlinx-coroutines = "1.7.3"
-ktor = "2.3.6"
+ktor = "2.3.7"
 ktorm = "3.6.0"
 liquibase = "4.25.0"
-# @pin until Spring 6
-logstash = "7.3"
+logstash = "7.4"
 mockk = "1.13.8"
 mockwebserver = "4.12.0"
 mysql = "8.0.33"
 openapi-generator = "7.1.0"
 ronin-kafka = "1.1.1"
 ronin-test = "0.2.0"
-# @pin until can move to JDK 17
-spring-boot = "2.7.13"
-springdoc = "1.7.0"
+spring-boot = "3.2.0"
+spring-kafka = "3.1.0"
+springdoc = "2.3.0"
 testcontainers = "1.19.3"
 
 [libraries]
@@ -56,7 +54,6 @@ mysql-connector-java = { module = "mysql:mysql-connector-java", version.ref = "m
 rider-core = { module = "com.github.database-rider:rider-core", version.ref = "dbrider" }
 ronin-kafka = { module = "com.projectronin:ronin-kafka", version.ref = "ronin-kafka" }
 ronin-test-data-generator = { module = "com.projectronin.test:ronin-test-data-generator", version.ref = "ronin-test" }
-spring-boot-kafka = { module = "org.springframework.kafka:spring-kafka", version.ref = "spring-boot" }
 spring-boot-parent = { module = "org.springframework.boot:spring-boot-parent", version.ref = "spring-boot" }
 spring-boot-starter = { module = "org.springframework.boot:spring-boot-starter", version.ref = "spring-boot" }
 spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator", version.ref = "spring-boot" }
@@ -64,7 +61,8 @@ spring-boot-starter-jdbc = { module = "org.springframework.boot:spring-boot-star
 spring-boot-starter-oauth = { module = "org.springframework.boot:spring-boot-starter-oauth2-resource-server", version.ref = "spring-boot" }
 spring-boot-starter-validation = { module = "org.springframework.boot:spring-boot-starter-validation", version.ref = "spring-boot" }
 spring-boot-starter-web = { module = "org.springframework.boot:spring-boot-starter-web", version.ref = "spring-boot" }
-springdoc-openapi-ui = { module = "org.springdoc:springdoc-openapi-ui", version.ref = "springdoc" }
+spring-kafka = { module = "org.springframework.kafka:spring-kafka", version.ref = "spring-kafka" }
+springdoc-openapi-ui = { module = "org.springdoc:springdoc-openapi-starter-webmvc-ui", version.ref = "springdoc" }
 testcontainers-bom = { module = "org.testcontainers:testcontainers-bom", version.ref = "testcontainers" }
 
 [bundles]
