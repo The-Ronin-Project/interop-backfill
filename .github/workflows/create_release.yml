@@ -97,6 +97,20 @@ jobs:
           tag: ${{ needs.tag.outputs.tag }}
           body: ${{ steps.changelog.outputs.changelog }}
           artifacts: "**/build/libs/*.jar"
+
+  image-build-push:
+    # if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    needs: [ fetch-metadata ]
+    name: Build and Push Image to Artifactory
+    uses: projectronin/github/.github/workflows/image_push_nexus.yml@image_push_nexus/v2
+    with:
+      base-directory: ./interop-backfill-server
+      image-tag: ${{ github.sha }},${{ needs.fetch-metadata.outputs.version }},latest
+      build_boot_jar: true
+    secrets:
+      username: ${{ secrets.NEXUS_DOCKER_USERNAME }}
+      password: ${{ secrets.NEXUS_DOCKER_PASSWORD }}
+
   deploy:
     uses: projectronin/ronin-charts/.github/workflows/deploy.yaml@deploy/v3
     needs: [ tag, release ]
