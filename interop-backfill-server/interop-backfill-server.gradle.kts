@@ -72,3 +72,59 @@ openApiGenerate {
         ),
     )
 }
+
+testing {
+    suites {
+        // val test by getting(JvmTestSuite::class) {
+        //     useJUnitJupiter()
+        // }
+        //
+        // // val it by registering(JvmTestSuite::class) {
+        // //     dependencies {
+        // //         implementation(project())
+        // //     }
+        // //     sources {
+        // //         java {
+        // //             setSrcDirs(listOf("src/it/kotlin"))
+        // //         }
+        // //         resources {
+        // //             setSrcDirs(listOf("src/it/resources"))
+        // //         }
+        // //     }
+        // // }
+        val validation by registering(JvmTestSuite::class) {
+            dependencies {
+                implementation(project())
+                implementation(project(":interop-backfill-client"))
+                implementation(libs.interop.commonHttp)
+                implementation(libs.kotlinx.coroutines.core)
+            }
+            sources {
+                java {
+                    setSrcDirs(listOf("src/validation/kotlin"))
+                }
+                resources {
+                    setSrcDirs(listOf("src/validation/resources"))
+                }
+            }
+
+            targets {
+                all {
+                    val passthroughProperties =
+                        listOf(
+                            "token_server_url",
+                            "backfill_server_url",
+                            "backfill_audience",
+                            "backfill_client_id",
+                            "backfill_client_secret",
+                        )
+                    testTask.configure {
+                        passthroughProperties.forEach {
+                            systemProperties[it] = System.getProperty(it) ?: System.getenv(it)
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
