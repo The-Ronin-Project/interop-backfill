@@ -93,7 +93,7 @@ jobs:
           image: interop-backfill
           build-args: "JAR_NAME=interop-backfill"
           tags: ${{ needs.tag.outputs.tag }}
-          docker-context-directory: ./interop-backfill
+          docker-context-directory: ./interop-backfill-server
           push: true
           username: ${{ secrets.NEXUS_DOCKER_USERNAME }}
           password: ${{ secrets.NEXUS_DOCKER_PASSWORD }}

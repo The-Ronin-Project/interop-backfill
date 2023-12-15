@@ -5,17 +5,31 @@ plugins {
     alias(libs.plugins.interop.gradle.spring.framework) apply false
     alias(libs.plugins.interop.gradle.server.version)
     alias(libs.plugins.interop.gradle.version.catalog)
-    alias(libs.plugins.interop.gradle.sonarqube)
+//    alias(libs.plugins.interop.sonarqube)
+    id("org.sonarqube") version "4.4.1.3373"
 
     alias(libs.plugins.openapi.generator) apply false
     // We need to force IntelliJ to do some actions they expose through this plugin.
     alias(libs.plugins.idea.ext)
 }
 
+sonar {
+    properties {
+        property("sonar.projectKey", project.rootProject.name)
+    }
+}
+
 subprojects {
     apply(plugin = "com.projectronin.interop.gradle.base")
     if (project.name != "interop-backfill-server") {
         apply(plugin = "com.projectronin.interop.gradle.server-publish")
+    }
+
+    sonar {
+        properties {
+            property("sonar.sources", "src/main")
+            property("sonar.tests", "src/test")
+        }
     }
 }
 

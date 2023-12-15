@@ -43,7 +43,7 @@ jobs:
           image: interop-backfill
           build-args: "JAR_NAME=interop-backfill"
           tags: "${{ github.sha }},${{ steps.get-version.outputs.version }}"
-          docker-context-directory: ./interop-backfill
+          docker-context-directory: ./interop-backfill-server
           push: "${{ github.ref_name == 'main' }}"
           username: "${{ secrets.NEXUS_DOCKER_USERNAME }}"
           password: "${{ secrets.NEXUS_DOCKER_PASSWORD }}"
