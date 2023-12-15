@@ -1,0 +1,69 @@
+name: CICD
+on:
+  push:
+    branches: [ main ]
+jobs:
+  build:
+    runs-on: oci-shared
+    steps:
+      - name: Setup JDK
+        uses: projectronin/github/.github/actions/setup-jdk-build@setup-jdk-build/v1
+      - id: git-config
+        uses: projectronin/github/git-config@git-config/v1
+      - name: Get Version
+        id: get-version
+        run: |
+          version=${{ github.sha }}
+          version=${version:0:10}
+          echo $version
+          git tag -fa "${version}" -m "${version}"
+          echo "version=${version}" >> $GITHUB_OUTPUT
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+      - name: Publish Snapshot
+        run: ./gradlew publish
+        env:
+          NEXUS_USER: ${{ secrets.NEXUS_MAVEN_USER }}
+          NEXUS_TOKEN: ${{ secrets.NEXUS_MAVEN_TOKEN }}
+      - name: Build and Test
+        uses: projectronin/github/.github/actions/basic-gradle-build-publish@basic_gradle_build_publish/v5
+        with:
+          nexus_user: ${{ secrets.NEXUS_MAVEN_USER }}
+          nexus_token: ${{ secrets.NEXUS_MAVEN_TOKEN }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          sonar_token: ${{ secrets.SONAR_TOKEN }}
+          sonar_host_url: ${{ secrets.SONAR_HOST_URL }}
+          dd-api-key: ${{ secrets.DATADOG_API_KEY }}
+          dd-service-name: interop-backfill
+          publish: false
+      - name: Build Service Image
+        id: build-service-image
+        uses: projectronin/github/build-image@build-image/v3
+        with:
+          image: interop-backfill
+          build-args: "JAR_NAME=interop-backfill"
+          tags: "${{ github.sha }},${{ steps.get-version.outputs.version }}"
+          docker-context-directory: ./interop-backfill
+          push: "${{ github.ref_name == 'main' }}"
+          username: "${{ secrets.NEXUS_DOCKER_USERNAME }}"
+          password: "${{ secrets.NEXUS_DOCKER_PASSWORD }}"
+      - name: Set Version
+        id: set-version
+        uses: projectronin/github/set-version@set-version/v2
+        with:
+          semver: "${{ steps.get-version.outputs.version }}"
+
+    outputs:
+      version: ${{ steps.get-version.outputs.version }}
+
+  # trigger auto-merging PR in `ronin-charts` for automatic dev deployment
+  deploy:
+    if: github.ref == 'refs/heads/main' || contains(github.ref, 'hotfix/')
+    uses: projectronin/ronin-charts/.github/workflows/deploy.yaml@deploy/v3
+    needs: [ build ]
+    with:
+      environment: dev
+      application: interop-backfill
+      commit-sha: ${{ github.sha }}
+      tag: ${{ needs.build.outputs.version }}
+    secrets: inherit

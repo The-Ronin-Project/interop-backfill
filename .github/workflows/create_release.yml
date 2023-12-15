@@ -86,6 +86,18 @@ jobs:
           NEXUS_USER: ${{ secrets.NEXUS_MAVEN_USER }}
           NEXUS_TOKEN: ${{ secrets.NEXUS_MAVEN_TOKEN }}
 
+      - name: Build Service Image
+        id: build-service-image
+        uses: projectronin/github/build-image@build-image/v3
+        with:
+          image: interop-backfill
+          build-args: "JAR_NAME=interop-backfill"
+          tags: ${{ needs.tag.outputs.tag }}
+          docker-context-directory: ./interop-backfill
+          push: true
+          username: ${{ secrets.NEXUS_DOCKER_USERNAME }}
+          password: ${{ secrets.NEXUS_DOCKER_PASSWORD }}
+
       - name: Generate Changelog
         id: changelog
         uses: gandarez/changelog-action@v1.2.0
@@ -97,19 +109,6 @@ jobs:
           tag: ${{ needs.tag.outputs.tag }}
           body: ${{ steps.changelog.outputs.changelog }}
           artifacts: "**/build/libs/*.jar"
-
-  image-build-push:
-    # if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    needs: [ fetch-metadata ]
-    name: Build and Push Image to Artifactory
-    uses: projectronin/github/.github/workflows/image_push_nexus.yml@image_push_nexus/v2
-    with:
-      base-directory: ./interop-backfill-server
-      image-tag: ${{ github.sha }},${{ needs.fetch-metadata.outputs.version }},latest
-      build_boot_jar: true
-    secrets:
-      username: ${{ secrets.NEXUS_DOCKER_USERNAME }}
-      password: ${{ secrets.NEXUS_DOCKER_PASSWORD }}
 
   deploy:
     uses: projectronin/ronin-charts/.github/workflows/deploy.yaml@deploy/v3
