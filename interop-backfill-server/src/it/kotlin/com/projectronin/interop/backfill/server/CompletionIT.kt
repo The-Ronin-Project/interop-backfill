@@ -30,31 +30,34 @@ import kotlin.time.Duration.Companion.seconds
 class CompletionIT : BaseBackfillIT() {
     @Test
     fun `picks up events`() {
-        val newBackfillId = runBlocking {
-            backfillClient.postBackfill(
-                NewBackfill(
-                    tenantId = "tenant",
-                    locationIds = listOf("123"),
-                    startDate = LocalDate.now(),
-                    endDate = LocalDate.now()
+        val newBackfillId =
+            runBlocking {
+                backfillClient.postBackfill(
+                    NewBackfill(
+                        tenantId = "tenant",
+                        locationIds = listOf("123"),
+                        startDate = LocalDate.now(),
+                        endDate = LocalDate.now(),
+                    ),
                 )
-            )
-        }.id!!
-        val entries = runBlocking {
-            queueClient.postQueueEntry(
-                backfillId = newBackfillId,
-                newQueueEntries = listOf(
-                    NewQueueEntry(newBackfillId, patientId = "123"),
-                    NewQueueEntry(newBackfillId, patientId = "456"),
-                    NewQueueEntry(newBackfillId, patientId = "789")
+            }.id!!
+        val entries =
+            runBlocking {
+                queueClient.postQueueEntry(
+                    backfillId = newBackfillId,
+                    newQueueEntries =
+                        listOf(
+                            NewQueueEntry(newBackfillId, patientId = "123"),
+                            NewQueueEntry(newBackfillId, patientId = "456"),
+                            NewQueueEntry(newBackfillId, patientId = "789"),
+                        ),
                 )
-            )
-        }
+            }
         entries.forEach {
             runBlocking {
                 queueClient.updateQueueEntryByID(
                     it.id!!,
-                    UpdateQueueEntry(BackfillStatus.STARTED)
+                    UpdateQueueEntry(BackfillStatus.STARTED),
                 )
             }
         }
@@ -64,88 +67,104 @@ class CompletionIT : BaseBackfillIT() {
         kfka.kafkaPublishService.publishResourceWrappers(
             tenantId = "tenant",
             trigger = DataTrigger.BACKFILL,
-            resourceWrappers = listOf(
-                PublishResourceWrapper(
-                    resource = appointment {
-                        id of Id("yeee")
-                    }
-                )
-            ),
-            metadata = Metadata(
-                runId = UUID.randomUUID().toString(),
-                runDateTime = OffsetDateTime.now(),
-                upstreamReferences = emptyList(),
-                backfillRequest = null
-            )
+            resourceWrappers =
+                listOf(
+                    PublishResourceWrapper(
+                        resource =
+                            appointment {
+                                id of Id("yeee")
+                            },
+                    ),
+                ),
+            metadata =
+                Metadata(
+                    runId = UUID.randomUUID().toString(),
+                    runDateTime = OffsetDateTime.now(),
+                    upstreamReferences = emptyList(),
+                    backfillRequest = null,
+                ),
         )
         kfka.kafkaPublishService.publishResourceWrappers(
             tenantId = "tenant",
             trigger = DataTrigger.BACKFILL,
-            resourceWrappers = listOf(
-                PublishResourceWrapper(
-                    resource = patient {
-                        id of Id("yeee")
-                    }
-                )
-            ),
-            metadata = Metadata(
-                runId = UUID.randomUUID().toString(),
-                runDateTime = OffsetDateTime.now(),
-                upstreamReferences = emptyList(),
-                backfillRequest = null
-            )
+            resourceWrappers =
+                listOf(
+                    PublishResourceWrapper(
+                        resource =
+                            patient {
+                                id of Id("yeee")
+                            },
+                    ),
+                ),
+            metadata =
+                Metadata(
+                    runId = UUID.randomUUID().toString(),
+                    runDateTime = OffsetDateTime.now(),
+                    upstreamReferences = emptyList(),
+                    backfillRequest = null,
+                ),
         )
         runBlocking { delay(7000) }
         kfka.kafkaPublishService.publishResourceWrappers(
             tenantId = "tenant",
             trigger = DataTrigger.BACKFILL,
-            resourceWrappers = listOf(
-                PublishResourceWrapper(
-                    resource = patient {
-                        id of Id("tenant-123")
-                        identifier of listOf(
-                            Identifier(
-                                system = CodeSystem.RONIN_FHIR_ID.uri,
-                                value = "123".asFHIR()
-                            )
-                        )
-                    }
-                )
-            ),
-            metadata = Metadata(
-                runId = UUID.randomUUID().toString(),
-                runDateTime = OffsetDateTime.now(),
-                upstreamReferences = null,
-                backfillRequest = Metadata.BackfillRequest(
-                    backfillId = newBackfillId.toString(),
-                    backfillStartDate = OffsetDateTime.now(),
-                    backfillEndDate = OffsetDateTime.now()
-                )
-            )
+            resourceWrappers =
+                listOf(
+                    PublishResourceWrapper(
+                        resource =
+                            patient {
+                                id of Id("tenant-123")
+                                identifier of
+                                    listOf(
+                                        Identifier(
+                                            system = CodeSystem.RONIN_FHIR_ID.uri,
+                                            value = "123".asFHIR(),
+                                        ),
+                                    )
+                            },
+                    ),
+                ),
+            metadata =
+                Metadata(
+                    runId = UUID.randomUUID().toString(),
+                    runDateTime = OffsetDateTime.now(),
+                    upstreamReferences = null,
+                    backfillRequest =
+                        Metadata.BackfillRequest(
+                            backfillId = newBackfillId.toString(),
+                            backfillStartDate = OffsetDateTime.now(),
+                            backfillEndDate = OffsetDateTime.now(),
+                        ),
+                ),
         )
 
         kfka.kafkaPublishService.publishResourceWrappers(
             tenantId = "tenant",
             trigger = DataTrigger.BACKFILL,
-            resourceWrappers = listOf(
-                PublishResourceWrapper(
-                    resource = appointment {
-                        id of Id("yeee")
-                    }
-                )
-            ),
-            metadata = Metadata(
-                runId = UUID.randomUUID().toString(),
-                runDateTime = OffsetDateTime.now(),
-                upstreamReferences = listOf(
-                    Metadata.UpstreamReference(resourceType = ResourceType.Patient, id = "tenant-456")
+            resourceWrappers =
+                listOf(
+                    PublishResourceWrapper(
+                        resource =
+                            appointment {
+                                id of Id("yeee")
+                            },
+                    ),
                 ),
-                backfillRequest = Metadata.BackfillRequest(
-                    backfillId = newBackfillId.toString(),
-                    backfillStartDate = OffsetDateTime.now(),
-                    backfillEndDate = OffsetDateTime.now()
-                )
-            )
+            metadata =
+                Metadata(
+                    runId = UUID.randomUUID().toString(),
+                    runDateTime = OffsetDateTime.now(),
+                    upstreamReferences =
+                        listOf(
+                            Metadata.UpstreamReference(resourceType = ResourceType.Patient, id = "tenant-456"),
+                        ),
+                    backfillRequest =
+                        Metadata.BackfillRequest(
+                            backfillId = newBackfillId.toString(),
+                            backfillStartDate = OffsetDateTime.now(),
+                            backfillEndDate = OffsetDateTime.now(),
+                        ),
+                ),
         )
         runBlocking {
             // c'mon it's a good server it just needs a moment to pick up the events, bah gawd
@@ -159,31 +178,34 @@ class CompletionIT : BaseBackfillIT() {
 
     @Test
     fun `resolver resolves`() {
-        val newBackfillId = runBlocking {
-            backfillClient.postBackfill(
-                NewBackfill(
-                    tenantId = "tenant",
-                    locationIds = listOf("123"),
-                    startDate = LocalDate.now(),
-                    endDate = LocalDate.now()
+        val newBackfillId =
+            runBlocking {
+                backfillClient.postBackfill(
+                    NewBackfill(
+                        tenantId = "tenant",
+                        locationIds = listOf("123"),
+                        startDate = LocalDate.now(),
+                        endDate = LocalDate.now(),
+                    ),
                 )
-            )
-        }.id!!
-        val entries = runBlocking {
-            queueClient.postQueueEntry(
-                backfillId = newBackfillId,
-                newQueueEntries = listOf(
-                    NewQueueEntry(newBackfillId, patientId = "123"),
-                    NewQueueEntry(newBackfillId, patientId = "456"),
-                    NewQueueEntry(newBackfillId, patientId = "789")
+            }.id!!
+        val entries =
+            runBlocking {
+                queueClient.postQueueEntry(
+                    backfillId = newBackfillId,
+                    newQueueEntries =
+                        listOf(
+                            NewQueueEntry(newBackfillId, patientId = "123"),
+                            NewQueueEntry(newBackfillId, patientId = "456"),
+                            NewQueueEntry(newBackfillId, patientId = "789"),
+                        ),
                 )
-            )
-        }
+            }
         entries.forEach {
             runBlocking {
                 queueClient.updateQueueEntryByID(
                     it.id!!,
-                    UpdateQueueEntry(BackfillStatus.STARTED)
+                    UpdateQueueEntry(BackfillStatus.STARTED),
                 )
             }
         }
@@ -191,13 +213,13 @@ class CompletionIT : BaseBackfillIT() {
             CompletenessDO {
                 queueId = entries[0].id!!
                 lastSeen = OffsetDateTime.now().minusDays(1)
-            }
+            },
         )
         completenessDAO.create(
             CompletenessDO {
                 queueId = entries[1].id!!
                 lastSeen = OffsetDateTime.now().minusDays(1)
-            }
+            },
         )
 
         assertNotNull(completenessDAO.getByID(entries[0].id!!))

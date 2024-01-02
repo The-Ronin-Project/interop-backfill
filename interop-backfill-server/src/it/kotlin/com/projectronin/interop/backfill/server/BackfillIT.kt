@@ -16,12 +16,13 @@ import java.util.UUID
 class BackfillIT : BaseBackfillIT() {
     @Test
     fun `post works`() {
-        val backFill = NewBackfill(
-            locationIds = listOf("123", "456"),
-            startDate = LocalDate.of(2022, 9, 1),
-            endDate = LocalDate.of(2023, 9, 1),
-            tenantId = "tenantId"
-        )
+        val backFill =
+            NewBackfill(
+                locationIds = listOf("123", "456"),
+                startDate = LocalDate.of(2022, 9, 1),
+                endDate = LocalDate.of(2023, 9, 1),
+                tenantId = "tenantId",
+            )
 
         val id = runBlocking { backfillClient.postBackfill(backFill) }
 
@@ -54,9 +55,10 @@ class BackfillIT : BaseBackfillIT() {
     @Test
     fun `get by id can 404`() {
         newBackFill()
-        val result = runCatching {
-            runBlocking { backfillClient.getBackfillById(UUID.randomUUID()) }
-        }
+        val result =
+            runCatching {
+                runBlocking { backfillClient.getBackfillById(UUID.randomUUID()) }
+            }
 
         assertTrue(result.isFailure)
         assertInstanceOf(ClientFailureException::class.java, result.exceptionOrNull())

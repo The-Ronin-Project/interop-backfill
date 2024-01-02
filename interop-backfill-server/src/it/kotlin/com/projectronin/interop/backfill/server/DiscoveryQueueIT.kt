@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Test
 import java.util.UUID
 
 class DiscoveryQueueIT : BaseBackfillIT() {
-
     @Test
     fun `get works`() {
         val id = newBackFill()
@@ -31,9 +30,10 @@ class DiscoveryQueueIT : BaseBackfillIT() {
         newBackFill()
         val id = newBackFill()
 
-        val entries = runBlocking {
-            discoveryClient.getDiscoveryQueueEntries("tenantId", DiscoveryQueueStatus.UNDISCOVERED, id)
-        }
+        val entries =
+            runBlocking {
+                discoveryClient.getDiscoveryQueueEntries("tenantId", DiscoveryQueueStatus.UNDISCOVERED, id)
+            }
 
         assertNotNull(entries)
         assertEquals(2, entries.size)
@@ -53,9 +53,10 @@ class DiscoveryQueueIT : BaseBackfillIT() {
     @Test
     fun `get can return a 404`() {
         newBackFill()
-        val result = runCatching {
-            runBlocking { discoveryClient.getDiscoveryQueueEntryById(UUID.randomUUID()) }
-        }
+        val result =
+            runCatching {
+                runBlocking { discoveryClient.getDiscoveryQueueEntryById(UUID.randomUUID()) }
+            }
 
         assertTrue(result.isFailure)
         assertInstanceOf(ClientFailureException::class.java, result.exceptionOrNull())

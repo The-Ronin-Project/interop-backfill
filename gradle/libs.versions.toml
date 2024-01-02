@@ -4,7 +4,7 @@ idea-ext = "1.1.7"
 interop-common = "4.1.0"
 interop-event-internal = "1.2.3"
 interop-fhir = "9.1.1"
-interop-gradle = "4.0.0"
+interop-gradle = "4.0.2"
 interop-kafka = "9.0.0"
 jakarta = "3.0.2"
 # @keep for forcing version
@@ -12,16 +12,16 @@ kotlin = "1.9.0"
 kotlinx-coroutines = "1.7.3"
 ktor = "2.3.7"
 ktorm = "3.6.0"
-liquibase = "4.25.0"
+liquibase = "4.25.1"
 logstash = "7.4"
 mockk = "1.13.8"
 mockwebserver = "4.12.0"
 mysql = "8.0.33"
-openapi-generator = "7.1.0"
+openapi-generator = "7.2.0"
 ronin-kafka = "1.1.2"
 ronin-test = "0.2.0"
-spring-boot = "3.2.0"
-spring-kafka = "3.1.0"
+spring-boot = "3.2.1"
+spring-kafka = "3.1.1"
 springdoc = "2.3.0"
 testcontainers = "1.19.3"
 
@@ -83,7 +83,6 @@ idea-ext = { id = "org.jetbrains.gradle.plugin.idea-ext", version.ref = "idea-ex
 interop-gradle-docker-integration = { id = "com.projectronin.interop.gradle.docker-integration", version.ref = "interop-gradle" }
 interop-gradle-junit = { id = "com.projectronin.interop.gradle.junit", version.ref = "interop-gradle" }
 interop-gradle-server-version = { id = "com.projectronin.interop.gradle.server-version", version.ref = "interop-gradle" }
-interop-gradle-sonarqube = { id = "com.projectronin.interop.gradle.sonarqube", version.ref = "interop-gradle" }
 interop-gradle-spring-boot = { id = "com.projectronin.interop.gradle.spring-boot", version.ref = "interop-gradle" }
 interop-gradle-spring-framework = { id = "com.projectronin.interop.gradle.spring", version.ref = "interop-gradle" }
 interop-gradle-version-catalog = { id = "com.projectronin.interop.gradle.version-catalog-update", version.ref = "interop-gradle" }

@@ -32,15 +32,18 @@ import java.util.UUID
 
 abstract class BaseBackfillIT {
     companion object {
-        val docker = DockerComposeContainer(File(BaseBackfillIT::class.java.getResource("/docker-compose-it.yaml")!!.file))
-            .withExposedService("backfill-server", 8080)
-            .withExposedService("mysql-server", 3306)
-            .withExposedService("mock-oauth2", 8080)
+        val docker =
+            DockerComposeContainer(File(BaseBackfillIT::class.java.getResource("/docker-compose-it.yaml")!!.file))
+                .withExposedService("backfill-server", 8080)
+                .withExposedService("mysql-server", 3306)
+                .withExposedService("mock-oauth2", 8080)
 
-        val start = docker
-            .waitingFor("backfill-server", Wait.forLogMessage(".*Started BackfillServerKt.*", 1))
-            .start()
+        val start =
+            docker
+                .waitingFor("backfill-server", Wait.forLogMessage(".*Started BackfillServerKt.*", 1))
+                .start()
     }
+
     private val serverPort by lazy {
         docker.getServicePort("backfill-server", 8080)
     }
@@ -74,28 +77,32 @@ abstract class BaseBackfillIT {
     }
 
     protected fun newBackFill(): UUID {
-        val backFill = NewBackfill(
-            locationIds = listOf("123", "456"),
-            startDate = LocalDate.of(2023, 9, 1),
-            endDate = LocalDate.of(2022, 9, 1),
-            tenantId = "tenantId"
-        )
+        val backFill =
+            NewBackfill(
+                locationIds = listOf("123", "456"),
+                startDate = LocalDate.of(2023, 9, 1),
+                endDate = LocalDate.of(2022, 9, 1),
+                tenantId = "tenantId",
+            )
 
         return runBlocking { backfillClient.postBackfill(backFill) }.id!!
     }
 
-    protected val authenticationService = InteropAuthenticationService(
-        httpClient,
-        authConfig = AuthenticationConfig(
-            token = Token("http://localhost:$mockAuthPort/backfill/token"),
-            audience = "https://interop-backfill.dev.projectronin.io",
-            client = Client(
-                id = "id",
-                secret = "secret"
-            ),
-            method = AuthMethod.STANDARD
+    protected val authenticationService =
+        InteropAuthenticationService(
+            httpClient,
+            authConfig =
+                AuthenticationConfig(
+                    token = Token("http://localhost:$mockAuthPort/backfill/token"),
+                    audience = "https://interop-backfill.dev.projectronin.io",
+                    client =
+                        Client(
+                            id = "id",
+                            secret = "secret",
+                        ),
+                    method = AuthMethod.STANDARD,
+                ),
         )
-    )
     val config = BackfillClientConfig(server = Server("http://localhost:$serverPort"))
     protected val backfillClient = BackfillClient(httpClient, config, authenticationService)
     protected val discoveryClient = DiscoveryQueueClient(httpClient, config, authenticationService)

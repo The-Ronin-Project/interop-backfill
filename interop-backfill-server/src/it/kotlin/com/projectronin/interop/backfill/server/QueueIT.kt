@@ -15,7 +15,6 @@ import java.util.UUID
 import kotlin.random.Random
 
 class QueueIT : BaseBackfillIT() {
-
     @Test
     fun `get works`() {
         val id = newBackFill()
@@ -87,10 +86,11 @@ class QueueIT : BaseBackfillIT() {
     @Test
     fun `post works`() {
         val id = newBackFill()
-        val newEntry = NewQueueEntry(
-            backfillId = id,
-            patientId = "123"
-        )
+        val newEntry =
+            NewQueueEntry(
+                backfillId = id,
+                patientId = "123",
+            )
 
         val result = runBlocking { queueClient.postQueueEntry(id, listOf(newEntry)) }
 
@@ -127,14 +127,17 @@ class QueueIT : BaseBackfillIT() {
         assertEquals(BackfillStatus.DELETED.toString(), entry?.status.toString())
     }
 
-    private fun newPatientQueue(backfillID: UUID, entryStatus: BackfillStatus = BackfillStatus.STARTED): UUID {
+    private fun newPatientQueue(
+        backfillID: UUID,
+        entryStatus: BackfillStatus = BackfillStatus.STARTED,
+    ): UUID {
         return queueDAO.insert(
             BackfillQueueDO {
                 backfillId = backfillID
                 entryId = UUID.randomUUID()
                 patientId = Random(10).toString()
                 status = com.projectronin.interop.backfill.server.generated.models.BackfillStatus.valueOf(entryStatus.toString())
-            }
+            },
         )!!
     }
 }
