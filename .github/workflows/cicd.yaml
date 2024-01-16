@@ -59,7 +59,7 @@ jobs:
   # trigger auto-merging PR in `ronin-charts` for automatic dev deployment
   deploy:
     if: github.ref == 'refs/heads/main' || contains(github.ref, 'hotfix/')
-    uses: projectronin/ronin-charts/.github/workflows/deploy.yaml@deploy/v3
+    uses: projectronin/ronin-charts/.github/workflows/deploy.yaml@deploy/v5
     needs: [ build ]
     with:
       environment: dev
