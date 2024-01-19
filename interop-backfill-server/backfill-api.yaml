@@ -193,6 +193,13 @@ paths:
           description: The ID of the organization for which to return the next entry in the queue
           schema:
             type: string
+        - name: queue_size
+          in: query
+          required: false
+          description: The number of entries to process at once, if not specified defaults to 1
+          schema:
+            type: integer
+            default: 1
       responses:
         '200':
           description: Successfully returned a list of QueueEntries.

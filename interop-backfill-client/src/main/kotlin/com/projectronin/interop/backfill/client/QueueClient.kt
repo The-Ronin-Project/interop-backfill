@@ -51,9 +51,15 @@ class QueueClient(
 
     /**
      * Retrieves all [QueueEntry]s for a given [tenantId] that are ready for processing.
+     * [queueSize] can be passed which is the number of entries to process at once
      * If any entries are still being processed this returns nothing.
+     * When there are entries in progress, return queueSize minus the number of entries in progress.
+     * If not specified queueSize is 1.
      */
-    suspend fun getQueueEntries(tenantId: String): List<QueueEntry> {
+    suspend fun getQueueEntries(
+        tenantId: String,
+        queueSize: Int? = null,
+    ): List<QueueEntry> {
         val authentication = authenticationService.getAuthentication()
         val response =
             client.request("BackFill", resourceUrl) { url ->
@@ -62,6 +68,7 @@ class QueueClient(
                     accept(ContentType.Application.Json)
                     contentType(ContentType.Application.Json)
                     parameter("tenant_id", tenantId)
+                    parameter("queue_size", queueSize)
                 }
             }
         return response.body()

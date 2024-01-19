@@ -33,12 +33,20 @@ class QueueController(
     }
 
     @PreAuthorize("hasAuthority('SCOPE_read:queue')")
-    override fun getQueueEntries(tenantId: String): ResponseEntity<List<QueueEntry>> {
+    override fun getQueueEntries(
+        tenantId: String,
+        queueSize: Int,
+    ): ResponseEntity<List<QueueEntry>> {
         val startedEntries = backfillQueueDAO.getByTenant(tenantId, status = BackfillStatus.STARTED)
-        if (startedEntries.isNotEmpty()) {
+        // queueSize <= entries return empty
+        if (queueSize <= startedEntries.size) {
             return ResponseEntity.ok(emptyList())
         }
-        val entries = backfillQueueDAO.getByTenant(tenantId, status = BackfillStatus.NOT_STARTED)
+        // queueSize > startedEntries get all NOT_STARTED chunk the list by
+        // queueSize-startedEntries.size (entriesDiff) and grab the first chunk
+        val entries =
+            backfillQueueDAO.getByTenant(tenantId, status = BackfillStatus.NOT_STARTED)
+                .take(queueSize - startedEntries.size)
         // some information is stored on the actual backfill object
         val backfillsById = entries.map { it.backfillId }.associateWith { backfillDAO.getByID(it)!! }
         val returnModels = entries.map { it.toModel(backfillsById[it.backfillId]!!) }

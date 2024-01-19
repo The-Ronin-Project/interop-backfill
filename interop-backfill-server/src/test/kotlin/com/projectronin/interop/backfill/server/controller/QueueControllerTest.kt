@@ -58,7 +58,7 @@ class QueueControllerTest {
     }
 
     @Test
-    fun `getQueueEntries - works`() {
+    fun `getQueueEntries - works with queue size of 1`() {
         val backfillID = UUID.randomUUID()
         val mockEntry1 =
             mockk<BackfillQueueDO> {
@@ -80,9 +80,9 @@ class QueueControllerTest {
         every { dao.getByTenant("tenant", status = BackfillStatus.NOT_STARTED) } returns listOf(mockEntry1, mockEntry2)
         every { backfillDao.getByID(backfillID) } returns mockBackfill
         every { dao.updateStatus(any(), BackfillStatus.STARTED) } just runs
-        val result = controller.getQueueEntries("tenant")
+        val result = controller.getQueueEntries("tenant", 1)
         assertEquals(HttpStatus.OK, result.statusCode)
-        assertEquals(2, result.body?.size)
+        assertEquals(1, result.body?.size)
     }
 
     @Test
@@ -97,9 +97,130 @@ class QueueControllerTest {
                 every { updatedDateTime } returns OffsetDateTime.now()
             }
         every { dao.getByTenant("tenant", status = BackfillStatus.STARTED) } returns listOf(mockEntry)
-        val result = controller.getQueueEntries("tenant")
+        val result = controller.getQueueEntries("tenant", 1)
         assertEquals(HttpStatus.OK, result.statusCode)
         assertEquals(0, result.body?.size)
+    }
+
+    @Test
+    fun `getQueueEntries - returns many(8) from queueSize setting of 10`() {
+        val backfillID = UUID.randomUUID()
+        val mockEntry0 =
+            mockk<BackfillQueueDO> {
+                every { backfillId } returns backfillID
+                every { entryId } returns UUID.randomUUID()
+                every { patientId } returns "123"
+                every { status } returns BackfillStatus.STARTED
+                every { updatedDateTime } returns OffsetDateTime.now()
+            }
+        val mockEntry1 =
+            mockk<BackfillQueueDO> {
+                every { backfillId } returns backfillID
+                every { entryId } returns UUID.randomUUID()
+                every { patientId } returns "456"
+                every { status } returns BackfillStatus.STARTED
+                every { updatedDateTime } returns OffsetDateTime.now()
+            }
+        val mockEntry2 =
+            mockk<BackfillQueueDO> {
+                every { backfillId } returns backfillID
+                every { entryId } returns UUID.randomUUID()
+                every { patientId } returns "789"
+                every { status } returns BackfillStatus.NOT_STARTED
+                every { updatedDateTime } returns OffsetDateTime.now()
+            }
+        val mockEntry3 =
+            mockk<BackfillQueueDO> {
+                every { backfillId } returns backfillID
+                every { entryId } returns UUID.randomUUID()
+                every { patientId } returns "012"
+                every { status } returns BackfillStatus.NOT_STARTED
+                every { updatedDateTime } returns OffsetDateTime.now()
+            }
+        val mockEntry4 =
+            mockk<BackfillQueueDO> {
+                every { backfillId } returns backfillID
+                every { entryId } returns UUID.randomUUID()
+                every { patientId } returns "345"
+                every { status } returns BackfillStatus.NOT_STARTED
+                every { updatedDateTime } returns OffsetDateTime.now()
+            }
+        val mockEntry5 =
+            mockk<BackfillQueueDO> {
+                every { backfillId } returns backfillID
+                every { entryId } returns UUID.randomUUID()
+                every { patientId } returns "678"
+                every { status } returns BackfillStatus.NOT_STARTED
+                every { updatedDateTime } returns OffsetDateTime.now()
+            }
+        val mockEntry6 =
+            mockk<BackfillQueueDO> {
+                every { backfillId } returns backfillID
+                every { entryId } returns UUID.randomUUID()
+                every { patientId } returns "901"
+                every { status } returns BackfillStatus.NOT_STARTED
+                every { updatedDateTime } returns OffsetDateTime.now()
+            }
+        val mockEntry7 =
+            mockk<BackfillQueueDO> {
+                every { backfillId } returns backfillID
+                every { entryId } returns UUID.randomUUID()
+                every { patientId } returns "234"
+                every { status } returns BackfillStatus.NOT_STARTED
+                every { updatedDateTime } returns OffsetDateTime.now()
+            }
+        val mockEntry8 =
+            mockk<BackfillQueueDO> {
+                every { backfillId } returns backfillID
+                every { entryId } returns UUID.randomUUID()
+                every { patientId } returns "567"
+                every { status } returns BackfillStatus.NOT_STARTED
+                every { updatedDateTime } returns OffsetDateTime.now()
+            }
+        val mockEntry9 =
+            mockk<BackfillQueueDO> {
+                every { backfillId } returns backfillID
+                every { entryId } returns UUID.randomUUID()
+                every { patientId } returns "890"
+                every { status } returns BackfillStatus.NOT_STARTED
+                every { updatedDateTime } returns OffsetDateTime.now()
+            }
+
+        val mockEntry10 =
+            mockk<BackfillQueueDO> {
+                every { backfillId } returns backfillID
+                every { entryId } returns UUID.randomUUID()
+                every { patientId } returns "890"
+                every { status } returns BackfillStatus.NOT_STARTED
+                every { updatedDateTime } returns OffsetDateTime.now()
+            }
+        val mockEntry11 =
+            mockk<BackfillQueueDO> {
+                every { backfillId } returns backfillID
+                every { entryId } returns UUID.randomUUID()
+                every { patientId } returns "890"
+                every { status } returns BackfillStatus.NOT_STARTED
+                every { updatedDateTime } returns OffsetDateTime.now()
+            }
+        val mockEntry12 =
+            mockk<BackfillQueueDO> {
+                every { backfillId } returns backfillID
+                every { entryId } returns UUID.randomUUID()
+                every { patientId } returns "890"
+                every { status } returns BackfillStatus.NOT_STARTED
+                every { updatedDateTime } returns OffsetDateTime.now()
+            }
+        every { dao.getByTenant("tenant", status = BackfillStatus.STARTED) } returns listOf(mockEntry0, mockEntry1)
+        every { dao.getByTenant("tenant", status = BackfillStatus.NOT_STARTED) } returns
+            listOf(
+                mockEntry2, mockEntry3, mockEntry4, mockEntry5, mockEntry6, mockEntry7, mockEntry8,
+                mockEntry9, mockEntry10, mockEntry11, mockEntry12,
+            )
+        every { backfillDao.getByID(backfillID) } returns mockBackfill
+        every { dao.updateStatus(any(), BackfillStatus.STARTED) } just runs
+        val result = controller.getQueueEntries("tenant", 10)
+        assertEquals(HttpStatus.OK, result.statusCode)
+        assertEquals(8, result.body?.size)
     }
 
     @Test
@@ -120,6 +241,109 @@ class QueueControllerTest {
         val result = controller.getQueueEntryById(entryID)
         assertEquals(HttpStatus.OK, result.statusCode)
         assertEquals(entryID, result.body?.id)
+    }
+
+    @Test
+    fun `getQueueEntries - returns partial list when some items started and some not started - math`() {
+        val backfillID = UUID.randomUUID()
+        val mockEntry1 =
+            mockk<BackfillQueueDO> {
+                every { backfillId } returns backfillID
+                every { entryId } returns UUID.randomUUID()
+                every { patientId } returns "123"
+                every { status } returns BackfillStatus.NOT_STARTED
+                every { updatedDateTime } returns OffsetDateTime.now()
+            }
+        val mockEntry2 =
+            mockk<BackfillQueueDO> {
+                every { backfillId } returns backfillID
+                every { entryId } returns UUID.randomUUID()
+                every { patientId } returns "456"
+                every { status } returns BackfillStatus.NOT_STARTED
+                every { updatedDateTime } returns OffsetDateTime.now()
+            }
+        val startedMockEntry =
+            mockk<BackfillQueueDO> {
+                every { backfillId } returns backfillID
+                every { entryId } returns UUID.randomUUID()
+                every { patientId } returns "789"
+                every { status } returns BackfillStatus.STARTED
+                every { updatedDateTime } returns OffsetDateTime.now()
+            }
+        every { dao.getByTenant("tenant", status = BackfillStatus.STARTED) } returns listOf(startedMockEntry)
+        every { dao.getByTenant("tenant", status = BackfillStatus.NOT_STARTED) } returns listOf(mockEntry1, mockEntry2)
+        every { backfillDao.getByID(backfillID) } returns mockBackfill
+        every { dao.updateStatus(any(), BackfillStatus.STARTED) } just runs
+        val result = controller.getQueueEntries("tenant", 2)
+        assertEquals(HttpStatus.OK, result.statusCode)
+        assertEquals(1, result.body?.size)
+    }
+
+    @Test
+    fun `getQueueEntries - works with queueSize being smaller than entries returns empty-list`() {
+        val backfillID = UUID.randomUUID()
+        val startedMockEntry1 =
+            mockk<BackfillQueueDO> {
+                every { backfillId } returns backfillID
+                every { entryId } returns UUID.randomUUID()
+                every { patientId } returns "123"
+                every { status } returns BackfillStatus.STARTED
+                every { updatedDateTime } returns OffsetDateTime.now()
+            }
+        val startedMockEntry2 =
+            mockk<BackfillQueueDO> {
+                every { backfillId } returns backfillID
+                every { entryId } returns UUID.randomUUID()
+                every { patientId } returns "789"
+                every { status } returns BackfillStatus.STARTED
+                every { updatedDateTime } returns OffsetDateTime.now()
+            }
+        val mockEntry =
+            mockk<BackfillQueueDO> {
+                every { backfillId } returns backfillID
+                every { entryId } returns UUID.randomUUID()
+                every { patientId } returns "456"
+                every { status } returns BackfillStatus.NOT_STARTED
+                every { updatedDateTime } returns OffsetDateTime.now()
+            }
+        every { dao.getByTenant("tenant", status = BackfillStatus.STARTED) } returns listOf(startedMockEntry1, startedMockEntry2)
+        every { dao.getByTenant("tenant", status = BackfillStatus.NOT_STARTED) } returns listOf(mockEntry)
+        every { backfillDao.getByID(backfillID) } returns mockBackfill
+        every { dao.updateStatus(any(), BackfillStatus.STARTED) } just runs
+        val result = controller.getQueueEntries("tenant", 1)
+        assertEquals(HttpStatus.OK, result.statusCode)
+        assertEquals(0, result.body?.size)
+    }
+
+    @Test
+    fun `getQueueEntries - queue size greater than entries not started works`() {
+        val backfillID = UUID.randomUUID()
+        val mockEntry1 =
+            mockk<BackfillQueueDO> {
+                every { backfillId } returns backfillID
+                every { entryId } returns UUID.randomUUID()
+                every { patientId } returns "123"
+                every { status } returns BackfillStatus.STARTED
+                every { updatedDateTime } returns OffsetDateTime.now()
+            }
+        val mockEntry2 =
+            mockk<BackfillQueueDO> {
+                every { backfillId } returns backfillID
+                every { entryId } returns UUID.randomUUID()
+                every { patientId } returns "456"
+                every { status } returns BackfillStatus.NOT_STARTED
+                every { updatedDateTime } returns OffsetDateTime.now()
+            }
+        every { dao.getByTenant("tenant", status = BackfillStatus.STARTED) } returns listOf(mockEntry1)
+        every { dao.getByTenant("tenant", status = BackfillStatus.NOT_STARTED) } returns
+            listOf(
+                mockEntry2,
+            )
+        every { backfillDao.getByID(backfillID) } returns mockBackfill
+        every { dao.updateStatus(any(), BackfillStatus.STARTED) } just runs
+        val result = controller.getQueueEntries("tenant", 8)
+        assertEquals(HttpStatus.OK, result.statusCode)
+        assertEquals(1, result.body?.size)
     }
 
     @Test

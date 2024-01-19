@@ -30,6 +30,53 @@ class QueueIT : BaseBackfillIT() {
     }
 
     @Test
+    fun `get works with default queueSize returns empty list queueSize equals started-size`() {
+        val id = newBackFill()
+        newPatientQueue(id, BackfillStatus.NOT_STARTED)
+        newPatientQueue(id, BackfillStatus.NOT_STARTED)
+        newPatientQueue(id, BackfillStatus.NOT_STARTED)
+        newPatientQueue(id, BackfillStatus.NOT_STARTED)
+        newPatientQueue(id, BackfillStatus.STARTED)
+
+        val result = runBlocking { queueClient.getQueueEntries("tenantId") }
+
+        assertNotNull(result)
+        assertEquals(0, result.size)
+    }
+
+    @Test
+    fun `get works with default queueSize returns 1`() {
+        val id = newBackFill()
+        newPatientQueue(id, BackfillStatus.NOT_STARTED)
+        newPatientQueue(id, BackfillStatus.NOT_STARTED)
+        newPatientQueue(id, BackfillStatus.NOT_STARTED)
+        newPatientQueue(id, BackfillStatus.NOT_STARTED)
+        newPatientQueue(id, BackfillStatus.COMPLETED)
+
+        val result = runBlocking { queueClient.getQueueEntries("tenantId") }
+
+        assertNotNull(result)
+        assertEquals(1, result.size)
+        assertEquals(BackfillStatus.NOT_STARTED, result.first().status)
+    }
+
+    @Test
+    fun `get works with queueSize returns 4`() {
+        val id = newBackFill()
+        newPatientQueue(id, BackfillStatus.NOT_STARTED)
+        newPatientQueue(id, BackfillStatus.NOT_STARTED)
+        newPatientQueue(id, BackfillStatus.NOT_STARTED)
+        newPatientQueue(id, BackfillStatus.NOT_STARTED)
+        newPatientQueue(id, BackfillStatus.STARTED)
+
+        val result = runBlocking { queueClient.getQueueEntries("tenantId", 5) }
+
+        assertNotNull(result)
+        assertEquals(4, result.size)
+        result.all { it.status == BackfillStatus.NOT_STARTED }
+    }
+
+    @Test
     fun `get returns nothing with an started entry`() {
         val id = newBackFill()
         newPatientQueue(id, BackfillStatus.STARTED)
