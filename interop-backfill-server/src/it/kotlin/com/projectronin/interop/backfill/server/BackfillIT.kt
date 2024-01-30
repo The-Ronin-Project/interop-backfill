@@ -2,7 +2,6 @@ package com.projectronin.interop.backfill.server
 
 import com.projectronin.interop.backfill.client.generated.models.NewBackfill
 import com.projectronin.interop.common.http.exceptions.ClientFailureException
-import io.ktor.client.request.get
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertFalse
@@ -10,6 +9,7 @@ import org.junit.jupiter.api.Assertions.assertInstanceOf
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
 import java.time.LocalDate
 import java.util.UUID
 
@@ -32,6 +32,41 @@ class BackfillIT : BaseBackfillIT() {
         assertEquals(id.id, backfill.first().backfillId)
         val entries = discoveryDAO.getByTenant("tenantId")
         assertEquals(2, entries.size)
+    }
+
+    @Test
+    fun `post works with patient only`() {
+        val backFill =
+            NewBackfill(
+                patientIds = listOf("123", "456"),
+                startDate = LocalDate.of(2022, 9, 1),
+                endDate = LocalDate.of(2023, 9, 1),
+                tenantId = "tenantId",
+            )
+
+        val id = runBlocking { backfillClient.postBackfill(backFill) }
+
+        assertNotNull(id)
+        val backfill = backfillDAO.getByTenant("tenantId")
+        assertEquals(1, backfill.size)
+        assertEquals(id.id, backfill.first().backfillId)
+        val discoveryEntries = discoveryDAO.getByTenant("tenantId")
+        assertEquals(0, discoveryEntries.size)
+        val entries = queueDAO.getByTenant("tenantId")
+        assertEquals(2, entries.size)
+    }
+
+    @Test
+    fun `post works with neither fails`() {
+        val backFill =
+            NewBackfill(
+                startDate = LocalDate.of(2022, 9, 1),
+                endDate = LocalDate.of(2023, 9, 1),
+                tenantId = "tenantId",
+            )
+        assertThrows<ClientFailureException> {
+            runBlocking { backfillClient.postBackfill(backFill) }
+        }
     }
 
     @Test

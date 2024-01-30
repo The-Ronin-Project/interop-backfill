@@ -32,6 +32,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GeneratedId'
+        '400':
+          description: Neither locations nor patient ids were sent
     get:
       tags:
         - backfill
@@ -349,6 +351,11 @@ components:
           items:
             type: string
           description: The location ids for this backfill
+        patient_ids:
+          type: array
+          items:
+            type: string
+          description: The list of patient ids to directly start processing, skipping discovery
         start_date:
           type: string
           format: date
@@ -359,7 +366,6 @@ components:
           description: The most recent date that data should be retrieved from
       required:
         - tenant_id
-        - location_ids
         - start_date
         - end_date
     Backfill:

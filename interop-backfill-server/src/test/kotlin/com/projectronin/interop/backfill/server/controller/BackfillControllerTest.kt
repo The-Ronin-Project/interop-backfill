@@ -193,7 +193,7 @@ class BackfillControllerTest {
     }
 
     @Test
-    fun `postBackfill - works`() {
+    fun `postBackfill - works with locations`() {
         val newBackfill =
             NewBackfill(
                 locationIds = listOf("123", "456"),
@@ -208,5 +208,56 @@ class BackfillControllerTest {
         assertNotNull(result)
         assertEquals(backfillID, result.body?.id)
         assertEquals(HttpStatus.CREATED, result.statusCode)
+    }
+
+    @Test
+    fun `postBackfill - works with patients`() {
+        val newBackfill =
+            NewBackfill(
+                patientIds = listOf("123", "456"),
+                startDate = LocalDate.of(2020, 9, 1),
+                endDate = LocalDate.of(2023, 9, 1),
+                tenantId = "tenant",
+            )
+        val backfillID = UUID.randomUUID()
+        every { dao.insert(match { it.tenantId == "tenant" }) } returns backfillID
+        every { queueDAO.insert(match { it.backfillId == backfillID }) } returns backfillID
+        val result = controller.postBackfill(newBackfill)
+        assertNotNull(result)
+        assertEquals(backfillID, result.body?.id)
+        assertEquals(HttpStatus.CREATED, result.statusCode)
+    }
+
+    @Test
+    fun `postBackfill - works with both patient and locaiton`() {
+        val newBackfill =
+            NewBackfill(
+                patientIds = listOf("123", "456"),
+                locationIds = listOf("123", "456"),
+                startDate = LocalDate.of(2020, 9, 1),
+                endDate = LocalDate.of(2023, 9, 1),
+                tenantId = "tenant",
+            )
+        val backfillID = UUID.randomUUID()
+        every { dao.insert(match { it.tenantId == "tenant" }) } returns backfillID
+        every { queueDAO.insert(match { it.backfillId == backfillID }) } returns backfillID
+        every { discoveryDAO.insert(match { it.backfillId == backfillID }) } returns backfillID
+        val result = controller.postBackfill(newBackfill)
+        assertNotNull(result)
+        assertEquals(backfillID, result.body?.id)
+        assertEquals(HttpStatus.CREATED, result.statusCode)
+    }
+
+    @Test
+    fun `postBackfill - fails with neither patient or location`() {
+        val newBackfill =
+            NewBackfill(
+                startDate = LocalDate.of(2020, 9, 1),
+                endDate = LocalDate.of(2023, 9, 1),
+                tenantId = "tenant",
+            )
+        val result = controller.postBackfill(newBackfill)
+        assertNotNull(result)
+        assertEquals(HttpStatus.BAD_REQUEST, result.statusCode)
     }
 }

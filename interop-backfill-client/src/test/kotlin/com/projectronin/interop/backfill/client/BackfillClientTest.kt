@@ -101,7 +101,14 @@ class BackfillClientTest {
                 .setBody(newUUID)
                 .setHeader("Content-Type", "application/json"),
         )
-        val newBackfill = NewBackfill("tenant", listOf("1", "2"), LocalDate.now(), LocalDate.now())
+        val newBackfill =
+            NewBackfill(
+                tenantId = "tenant",
+                locationIds = listOf("1", "2"),
+                patientIds = listOf("3"),
+                startDate = LocalDate.now(),
+                endDate = LocalDate.now(),
+            )
 
         val response =
             runBlocking {

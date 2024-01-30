@@ -12,7 +12,6 @@ import com.projectronin.interop.backfill.server.generated.models.BackfillStatus
 import com.projectronin.interop.backfill.server.generated.models.DiscoveryQueueStatus
 import com.projectronin.interop.backfill.server.generated.models.GeneratedId
 import com.projectronin.interop.backfill.server.generated.models.NewBackfill
-import mu.KotlinLogging
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
@@ -25,8 +24,6 @@ class BackfillController(
     private val backfillQueueDAO: BackfillQueueDAO,
     private val discoveryQueueDAO: DiscoveryQueueDAO,
 ) : BackfillApi {
-    val logger = KotlinLogging.logger { }
-
     // GETS
     @PreAuthorize("hasAuthority('SCOPE_read:backfill')")
     override fun getBackfillById(backfillId: UUID): ResponseEntity<Backfill> {
@@ -43,8 +40,12 @@ class BackfillController(
     // POST
     @PreAuthorize("hasAuthority('SCOPE_create:backfill')")
     override fun postBackfill(newBackfill: NewBackfill): ResponseEntity<GeneratedId> {
+        if (newBackfill.locationIds.isNullOrEmpty() && newBackfill.patientIds.isNullOrEmpty()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build()
+        }
         val newUUID = backfillDAO.insert(newBackfill.toDO())
         newBackfill.toDiscoveryDOs(newUUID).forEach { discoveryQueueDAO.insert(it) }
+        newBackfill.toQueueDOs(newUUID).forEach { backfillQueueDAO.insert(it) }
         return ResponseEntity.status(HttpStatus.CREATED).body(GeneratedId(newUUID))
     }
 
@@ -108,12 +109,22 @@ class BackfillController(
     }
 
     fun NewBackfill.toDiscoveryDOs(newUUID: UUID): List<DiscoveryQueueDO> {
-        return this.locationIds.map {
+        return this.locationIds?.map {
             DiscoveryQueueDO {
                 backfillId = newUUID
                 locationId = it
                 status = DiscoveryQueueStatus.UNDISCOVERED
             }
-        }
+        } ?: emptyList()
+    }
+
+    fun NewBackfill.toQueueDOs(newUUID: UUID): List<BackfillQueueDO> {
+        return this.patientIds?.distinct()?.map {
+            BackfillQueueDO {
+                backfillId = newUUID
+                patientId = it
+                status = BackfillStatus.NOT_STARTED
+            }
+        } ?: emptyList()
     }
 }
