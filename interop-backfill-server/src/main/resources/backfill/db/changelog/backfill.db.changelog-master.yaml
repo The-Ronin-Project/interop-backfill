@@ -3,3 +3,5 @@ databaseChangeLog:
       file: backfill/db/changelog/backfill.db.changelog-0.0.1.yaml
   - include:
       file: backfill/db/changelog/backfill.db.changelog-1.1.0.yaml
+  - include:
+      file: backfill/db/changelog/backfill.db.changelog-2.1.0.yaml

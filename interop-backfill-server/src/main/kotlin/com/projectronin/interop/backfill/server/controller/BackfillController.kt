@@ -1,5 +1,6 @@
 package com.projectronin.interop.backfill.server.controller
 
+import com.projectronin.event.interop.internal.v1.ResourceType
 import com.projectronin.interop.backfill.server.data.BackfillDAO
 import com.projectronin.interop.backfill.server.data.BackfillQueueDAO
 import com.projectronin.interop.backfill.server.data.DiscoveryQueueDAO
@@ -40,12 +41,33 @@ class BackfillController(
     // POST
     @PreAuthorize("hasAuthority('SCOPE_create:backfill')")
     override fun postBackfill(newBackfill: NewBackfill): ResponseEntity<GeneratedId> {
-        if (newBackfill.locationIds.isNullOrEmpty() && newBackfill.patientIds.isNullOrEmpty()) {
+        // this is really only used for validating the allowed resources
+        val validatedBackfill =
+            if (newBackfill.allowedResources?.isNotEmpty() == true &&
+                !newBackfill.allowedResources.contains(
+                    ResourceType.Patient.name,
+                )
+            ) {
+                newBackfill.copy(
+                    allowedResources = newBackfill.allowedResources.plus(ResourceType.Patient.name),
+                )
+            } else {
+                newBackfill
+            }
+
+        // check that they spelled everything correctly
+        validatedBackfill.allowedResources?.forEach { resourceType ->
+            if (!ResourceType.values().map { it.name }.contains(resourceType)) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).build()
+            }
+        }
+
+        if (validatedBackfill.locationIds.isNullOrEmpty() && validatedBackfill.patientIds.isNullOrEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).build()
         }
-        val newUUID = backfillDAO.insert(newBackfill.toDO())
-        newBackfill.toDiscoveryDOs(newUUID).forEach { discoveryQueueDAO.insert(it) }
-        newBackfill.toQueueDOs(newUUID).forEach { backfillQueueDAO.insert(it) }
+        val newUUID = backfillDAO.insert(validatedBackfill.toDO())
+        validatedBackfill.toDiscoveryDOs(newUUID).forEach { discoveryQueueDAO.insert(it) }
+        validatedBackfill.toQueueDOs(newUUID).forEach { backfillQueueDAO.insert(it) }
         return ResponseEntity.status(HttpStatus.CREATED).body(GeneratedId(newUUID))
     }
 
@@ -97,6 +119,12 @@ class BackfillController(
             status = status,
             locationIds = locationIds,
             lastUpdated = lastUpdated,
+            allowedResources =
+                if (this.allowedResources.isNullOrEmpty()) {
+                    emptyList()
+                } else {
+                    this.allowedResources!!.split(",")
+                },
         )
     }
 
@@ -105,6 +133,7 @@ class BackfillController(
             tenantId = this@toDO.tenantId
             startDate = this@toDO.startDate
             endDate = this@toDO.endDate
+            allowedResources = this@toDO.allowedResources?.joinToString(",")
         }
     }
 

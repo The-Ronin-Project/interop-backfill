@@ -39,6 +39,7 @@ class BackfillControllerTest {
                 every { startDate } returns LocalDate.of(2022, 9, 1)
                 every { endDate } returns LocalDate.of(2023, 9, 1)
                 every { isDeleted } returns false
+                every { allowedResources } returns "Patient,DocumentReference"
             }
         val mockDiscoveryQueueDO =
             mockk<DiscoveryQueueDO> {
@@ -54,6 +55,11 @@ class BackfillControllerTest {
         every { discoveryDAO.getByBackfillID(any()) } returns listOf(mockDiscoveryQueueDO)
         val result = controller.getBackfillById(UUID.randomUUID())
         assertNotNull(result)
+        assertEquals("da tenant", result.body?.tenantId)
+        assertEquals(LocalDate.of(2022, 9, 1), result.body?.startDate)
+        assertEquals(LocalDate.of(2023, 9, 1), result.body?.endDate)
+        assertEquals(OffsetDateTime.of(2023, 9, 1, 0, 0, 0, 0, ZoneOffset.UTC), result.body?.lastUpdated)
+        assertEquals(listOf("Patient", "DocumentReference"), result.body?.allowedResources)
     }
 
     @Test
@@ -65,6 +71,7 @@ class BackfillControllerTest {
                 every { startDate } returns LocalDate.of(2022, 9, 1)
                 every { endDate } returns LocalDate.of(2023, 9, 1)
                 every { isDeleted } returns false
+                every { allowedResources } returns null
             }
         val mockDiscoveryQueueDO =
             mockk<DiscoveryQueueDO> {
@@ -87,6 +94,7 @@ class BackfillControllerTest {
                 every { startDate } returns LocalDate.of(2022, 9, 1)
                 every { endDate } returns LocalDate.of(2023, 9, 1)
                 every { isDeleted } returns true
+                every { allowedResources } returns null
             }
         val mockDiscoveryQueueDO =
             mockk<DiscoveryQueueDO> {
@@ -109,6 +117,7 @@ class BackfillControllerTest {
                 every { startDate } returns LocalDate.of(2022, 9, 1)
                 every { endDate } returns LocalDate.of(2023, 9, 1)
                 every { isDeleted } returns false
+                every { allowedResources } returns null
             }
         val mockDiscoveryQueueDO =
             mockk<DiscoveryQueueDO> {
@@ -149,6 +158,7 @@ class BackfillControllerTest {
                 every { startDate } returns LocalDate.of(2022, 9, 1)
                 every { endDate } returns LocalDate.of(2023, 9, 1)
                 every { isDeleted } returns false
+                every { allowedResources } returns null
             }
         val mockDiscoveryQueueDO =
             mockk<DiscoveryQueueDO> {
@@ -229,7 +239,7 @@ class BackfillControllerTest {
     }
 
     @Test
-    fun `postBackfill - works with both patient and locaiton`() {
+    fun `postBackfill - works with both patient and location`() {
         val newBackfill =
             NewBackfill(
                 patientIds = listOf("123", "456"),
@@ -255,6 +265,59 @@ class BackfillControllerTest {
                 startDate = LocalDate.of(2020, 9, 1),
                 endDate = LocalDate.of(2023, 9, 1),
                 tenantId = "tenant",
+            )
+        val result = controller.postBackfill(newBackfill)
+        assertNotNull(result)
+        assertEquals(HttpStatus.BAD_REQUEST, result.statusCode)
+    }
+
+    @Test
+    fun `postBackfill - works with allowed resources`() {
+        val newBackfill =
+            NewBackfill(
+                locationIds = listOf("123", "456"),
+                startDate = LocalDate.of(2020, 9, 1),
+                endDate = LocalDate.of(2023, 9, 1),
+                tenantId = "tenant",
+                allowedResources = listOf("Patient", "DocumentReference"),
+            )
+        val backfillID = UUID.randomUUID()
+        every { dao.insert(match { it.tenantId == "tenant" && it.allowedResources == "Patient,DocumentReference" }) } returns backfillID
+        every { discoveryDAO.insert(match { it.backfillId == backfillID }) } returns backfillID
+        val result = controller.postBackfill(newBackfill)
+        assertNotNull(result)
+        assertEquals(backfillID, result.body?.id)
+        assertEquals(HttpStatus.CREATED, result.statusCode)
+    }
+
+    @Test
+    fun `postBackfill - adds patient`() {
+        val newBackfill =
+            NewBackfill(
+                locationIds = listOf("123", "456"),
+                startDate = LocalDate.of(2020, 9, 1),
+                endDate = LocalDate.of(2023, 9, 1),
+                tenantId = "tenant",
+                allowedResources = listOf("DocumentReference"),
+            )
+        val backfillID = UUID.randomUUID()
+        every { dao.insert(match { it.tenantId == "tenant" && it.allowedResources == "DocumentReference,Patient" }) } returns backfillID
+        every { discoveryDAO.insert(match { it.backfillId == backfillID }) } returns backfillID
+        val result = controller.postBackfill(newBackfill)
+        assertNotNull(result)
+        assertEquals(backfillID, result.body?.id)
+        assertEquals(HttpStatus.CREATED, result.statusCode)
+    }
+
+    @Test
+    fun `postBackfill - fails with bad resource type specified`() {
+        val newBackfill =
+            NewBackfill(
+                locationIds = listOf("123", "456"),
+                startDate = LocalDate.of(2020, 9, 1),
+                endDate = LocalDate.of(2023, 9, 1),
+                tenantId = "tenant",
+                allowedResources = listOf("DocumentReference", "ID4"),
             )
         val result = controller.postBackfill(newBackfill)
         assertNotNull(result)

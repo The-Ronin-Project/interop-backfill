@@ -1,0 +1,19 @@
+databaseChangeLog:
+  - changeSet:
+      id: backfill-add-allowed-resources
+      author: Sam Felt
+      preConditions:
+        - onFail: MARK_RAN
+          not:
+            - columnExists:
+                tableName: backfill
+                columnName: allowed_resources
+      changes:
+        - addColumn:
+            tableName: backfill
+            columns:
+              - column:
+                  name: allowed_resources
+                  type: java.sql.Types.VARCHAR(2048)
+                  constraints:
+                    nullable: true

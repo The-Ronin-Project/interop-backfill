@@ -27,6 +27,7 @@ class BackfillDAO(database: Database) : BaseInteropDAO<BackfillDO, UUID>(databas
             set(it.tenantId, backfillDO.tenantId)
             set(it.startDate, backfillDO.startDate)
             set(it.endDate, backfillDO.endDate)
+            set(it.allowedResources, backfillDO.allowedResources)
         }
 
         logger.info { "Backfill $newUUID inserted" }

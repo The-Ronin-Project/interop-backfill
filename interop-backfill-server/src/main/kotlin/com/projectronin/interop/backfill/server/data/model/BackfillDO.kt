@@ -11,4 +11,5 @@ interface BackfillDO : Entity<BackfillDO> {
     var startDate: LocalDate
     var endDate: LocalDate
     var isDeleted: Boolean
+    var allowedResources: String?
 }

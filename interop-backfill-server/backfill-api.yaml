@@ -339,6 +339,11 @@ components:
       properties:
         id:
           $ref: '#/components/schemas/Id'
+    ResourceType:
+      type: string
+      format: fhirType
+      description: The type of resources allowed to process
+      example: Appointment
     NewBackfill:
       type: object
       properties:
@@ -364,6 +369,11 @@ components:
           type: string
           format: date
           description: The most recent date that data should be retrieved from
+        allowed_resources:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResourceType'
+          description: The set of resources to process, Patient is assumed, null or empty means all resources
       required:
         - tenant_id
         - start_date
@@ -397,6 +407,11 @@ components:
           type: string
           format: date-time
           description: The last time any entry in this backfill was processed
+        allowed_resources:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResourceType'
+          description: The set of resources to process
       required:
         - id
         - tenant_id

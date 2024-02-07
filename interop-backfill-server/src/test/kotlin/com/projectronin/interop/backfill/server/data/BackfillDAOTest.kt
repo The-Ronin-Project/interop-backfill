@@ -43,6 +43,7 @@ class BackfillDAOTest {
         val backfill = dao.getByID(UUID.fromString("b4e8e80a-297a-4b19-bd59-4b8072db9cc4"))
         assertNotNull(backfill)
         assertEquals(LocalDate.of(2022, 8, 1), backfill?.startDate)
+        assertNotNull(backfill?.allowedResources)
     }
 
     @Test
@@ -63,6 +64,7 @@ class BackfillDAOTest {
                 tenantId = "tenant1"
                 startDate = LocalDate.of(2022, 8, 1)
                 endDate = LocalDate.of(2023, 9, 1)
+                allowedResources = "Patient,DocumentReference"
             }
         val uuid = dao.insert(newBackfill)
         assertNotNull(uuid)

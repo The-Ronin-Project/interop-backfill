@@ -13,4 +13,5 @@ object BackfillDOs : Table<BackfillDO>("backfill") {
     var startDate = date("start_dt").bindTo { it.startDate }
     var endDate = date("end_dt").bindTo { it.endDate }
     var isDeleted = boolean("is_deleted").bindTo { it.isDeleted }
+    var allowedResources = varchar("allowed_resources").bindTo { it.allowedResources }
 }

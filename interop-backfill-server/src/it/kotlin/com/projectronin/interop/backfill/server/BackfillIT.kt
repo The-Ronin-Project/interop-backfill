@@ -70,6 +70,43 @@ class BackfillIT : BaseBackfillIT() {
     }
 
     @Test
+    fun `post fails with bad resource `() {
+        val backFill =
+            NewBackfill(
+                locationIds = listOf("123", "456"),
+                startDate = LocalDate.of(2022, 9, 1),
+                endDate = LocalDate.of(2023, 9, 1),
+                tenantId = "tenantId",
+                allowedResources = listOf("ID4"),
+            )
+        assertThrows<ClientFailureException> {
+            runBlocking { backfillClient.postBackfill(backFill) }
+        }
+    }
+
+    @Test
+    fun `post works with allowed resources`() {
+        val backFill =
+            NewBackfill(
+                locationIds = listOf("123", "456"),
+                startDate = LocalDate.of(2022, 9, 1),
+                endDate = LocalDate.of(2023, 9, 1),
+                tenantId = "tenantId",
+                allowedResources = listOf("DocumentReference"),
+            )
+
+        val id = runBlocking { backfillClient.postBackfill(backFill) }
+
+        assertNotNull(id)
+        val backfill = backfillDAO.getByTenant("tenantId")
+        assertEquals(1, backfill.size)
+        assertEquals(id.id, backfill.first().backfillId)
+        assertEquals("DocumentReference,Patient", backfill.first().allowedResources)
+        val entries = discoveryDAO.getByTenant("tenantId")
+        assertEquals(2, entries.size)
+    }
+
+    @Test
     fun `get works`() {
         val id = newBackFill()
         val backfill = runBlocking { backfillClient.getBackfillById(id) }
