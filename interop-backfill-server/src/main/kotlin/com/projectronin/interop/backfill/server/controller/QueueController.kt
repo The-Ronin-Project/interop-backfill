@@ -104,6 +104,12 @@ class QueueController(
             endDate = backfillDO.endDate,
             status = this.status,
             lastUpdated = this.updatedDateTime,
+            allowedResources =
+                if (backfillDO.allowedResources.isNullOrEmpty()) {
+                    emptyList()
+                } else {
+                    backfillDO.allowedResources!!.split(",")
+                },
         )
     }
 

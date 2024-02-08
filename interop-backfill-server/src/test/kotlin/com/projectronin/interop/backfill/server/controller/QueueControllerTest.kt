@@ -29,6 +29,7 @@ class QueueControllerTest {
             every { tenantId } returns "da tenant"
             every { startDate } returns LocalDate.of(2020, 9, 1)
             every { endDate } returns LocalDate.of(2023, 9, 1)
+            every { allowedResources } returns null
         }
 
     @Test
@@ -241,6 +242,34 @@ class QueueControllerTest {
         val result = controller.getQueueEntryById(entryID)
         assertEquals(HttpStatus.OK, result.statusCode)
         assertEquals(entryID, result.body?.id)
+    }
+
+    @Test
+    fun `getQueueEntryById - works with allowed resources`() {
+        val backfillID = UUID.randomUUID()
+        val entryID = UUID.randomUUID()
+        val resourcesBackfill =
+            mockk<BackfillDO> {
+                every { tenantId } returns "da tenant"
+                every { startDate } returns LocalDate.of(2020, 9, 1)
+                every { endDate } returns LocalDate.of(2023, 9, 1)
+                every { allowedResources } returns "Patient,HotSauce"
+            }
+        val mockEntry =
+            mockk<BackfillQueueDO> {
+                every { backfillId } returns backfillID
+                every { entryId } returns entryID
+                every { patientId } returns "123"
+                every { status } returns BackfillStatus.NOT_STARTED
+                every { updatedDateTime } returns OffsetDateTime.now()
+            }
+
+        every { dao.getByID(entryID) } returns mockEntry
+        every { backfillDao.getByID(backfillID) } returns resourcesBackfill
+        val result = controller.getQueueEntryById(entryID)
+        assertEquals(HttpStatus.OK, result.statusCode)
+        assertEquals(entryID, result.body?.id)
+        assertEquals(2, result.body?.allowedResources?.size)
     }
 
     @Test

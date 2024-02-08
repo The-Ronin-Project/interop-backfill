@@ -43,11 +43,24 @@ class QueueClientTest {
             endDate = LocalDate.now(),
             tenantId = "123",
             status = BackfillStatus.STARTED,
+            allowedResources = emptyList(),
         )
+    val objectMapper = JacksonManager.nonAbsentObjectMapper
 
     @Test
     fun `getEntriesByBackfillID - works`() {
-        val expectedQueueEntryJson = JacksonManager.objectMapper.writeValueAsString(listOf(expectedQueueEntry))
+        val expectedQueueEntryWithResources =
+            QueueEntry(
+                id = UUID.randomUUID(),
+                backfillId = UUID.randomUUID(),
+                patientId = "123",
+                startDate = LocalDate.now(),
+                endDate = LocalDate.now(),
+                tenantId = "123",
+                status = BackfillStatus.STARTED,
+                allowedResources = listOf("Patient"),
+            )
+        val expectedQueueEntryJson = objectMapper.writeValueAsString(listOf(expectedQueueEntryWithResources))
         mockWebServer.enqueue(
             MockResponse()
                 .setResponseCode(HttpStatusCode.OK.value)
@@ -61,7 +74,7 @@ class QueueClientTest {
                     UUID.fromString("1d531a31-49a9-af74-03d5-573b456efca5"),
                 )
             }
-        assertEquals(listOf(expectedQueueEntry), response)
+        assertEquals(listOf(expectedQueueEntryWithResources), response)
         val request = mockWebServer.takeRequest()
         assertEquals("GET", request.method)
         assertEquals(true, request.path?.endsWith("/queue/backfill/1d531a31-49a9-af74-03d5-573b456efca5"))
@@ -70,7 +83,7 @@ class QueueClientTest {
 
     @Test
     fun `getQueueEntries - works`() {
-        val expectedQueueEntryJson = JacksonManager.objectMapper.writeValueAsString(listOf(expectedQueueEntry))
+        val expectedQueueEntryJson = objectMapper.writeValueAsString(listOf(expectedQueueEntry))
         mockWebServer.enqueue(
             MockResponse()
                 .setResponseCode(HttpStatusCode.OK.value)
@@ -93,7 +106,7 @@ class QueueClientTest {
 
     @Test
     fun `getQueueEntryById - works`() {
-        val expectedQueueEntryJson = JacksonManager.objectMapper.writeValueAsString(expectedQueueEntry)
+        val expectedQueueEntryJson = objectMapper.writeValueAsString(expectedQueueEntry)
         mockWebServer.enqueue(
             MockResponse()
                 .setResponseCode(HttpStatusCode.OK.value)
@@ -122,8 +135,8 @@ class QueueClientTest {
                 patientId = "123",
             )
         val generatedId = GeneratedId(UUID.randomUUID())
-        val expectedNewQueueEntryJson = JacksonManager.objectMapper.writeValueAsString(listOf(newQueueEntry))
-        val expectedGeneratedIds = JacksonManager.objectMapper.writeValueAsString(listOf(generatedId))
+        val expectedNewQueueEntryJson = objectMapper.writeValueAsString(listOf(newQueueEntry))
+        val expectedGeneratedIds = objectMapper.writeValueAsString(listOf(generatedId))
         mockWebServer.enqueue(
             MockResponse()
                 .setResponseCode(HttpStatusCode.OK.value)
@@ -152,7 +165,7 @@ class QueueClientTest {
             UpdateQueueEntry(
                 status = BackfillStatus.COMPLETED,
             )
-        val expectedNewQueueEntryJson = JacksonManager.objectMapper.writeValueAsString(updatedQueueEntry)
+        val expectedNewQueueEntryJson = objectMapper.writeValueAsString(updatedQueueEntry)
         mockWebServer.enqueue(
             MockResponse()
                 .setResponseCode(HttpStatusCode.OK.value)
