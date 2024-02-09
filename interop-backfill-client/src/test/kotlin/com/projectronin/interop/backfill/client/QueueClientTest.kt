@@ -60,7 +60,20 @@ class QueueClientTest {
                 status = BackfillStatus.STARTED,
                 allowedResources = listOf("Patient"),
             )
-        val expectedQueueEntryJson = objectMapper.writeValueAsString(listOf(expectedQueueEntryWithResources))
+        val expectedQueueEntryWithOutResources =
+            QueueEntry(
+                id = UUID.randomUUID(),
+                backfillId = UUID.randomUUID(),
+                patientId = "123",
+                startDate = LocalDate.now(),
+                endDate = LocalDate.now(),
+                tenantId = "123",
+                status = BackfillStatus.STARTED,
+            )
+        val expectedQueueEntryJson =
+            objectMapper.writeValueAsString(
+                listOf(expectedQueueEntryWithResources, expectedQueueEntryWithOutResources),
+            )
         mockWebServer.enqueue(
             MockResponse()
                 .setResponseCode(HttpStatusCode.OK.value)
@@ -74,7 +87,7 @@ class QueueClientTest {
                     UUID.fromString("1d531a31-49a9-af74-03d5-573b456efca5"),
                 )
             }
-        assertEquals(listOf(expectedQueueEntryWithResources), response)
+        assertEquals(listOf(expectedQueueEntryWithResources, expectedQueueEntryWithOutResources), response)
         val request = mockWebServer.takeRequest()
         assertEquals("GET", request.method)
         assertEquals(true, request.path?.endsWith("/queue/backfill/1d531a31-49a9-af74-03d5-573b456efca5"))

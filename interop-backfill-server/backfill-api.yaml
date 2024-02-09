@@ -507,7 +507,6 @@ components:
         - location_ids
         - start_date
         - end_date
-        - allowed_resources
     UpdateQueueEntry:
       type: object
       properties:
