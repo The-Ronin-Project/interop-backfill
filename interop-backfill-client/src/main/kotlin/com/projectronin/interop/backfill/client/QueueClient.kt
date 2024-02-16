@@ -2,6 +2,7 @@ package com.projectronin.interop.backfill.client
 
 import com.projectronin.interop.backfill.client.generated.models.GeneratedId
 import com.projectronin.interop.backfill.client.generated.models.NewQueueEntry
+import com.projectronin.interop.backfill.client.generated.models.Order
 import com.projectronin.interop.backfill.client.generated.models.QueueEntry
 import com.projectronin.interop.backfill.client.generated.models.UpdateQueueEntry
 import com.projectronin.interop.backfill.client.spring.BackfillClientConfig
@@ -33,9 +34,14 @@ class QueueClient(
     private val resourceUrl: String = "${backfillClientConfig.server.url}/queue"
 
     /**
-     * Retrieves all [QueueEntry]s for a given [backfillId]
+     * Retrieves a page of [QueueEntry]s for a given [backfillId]
      */
-    suspend fun getEntriesByBackfillID(backfillId: UUID): List<QueueEntry> {
+    suspend fun getEntriesByBackfillID(
+        backfillId: UUID,
+        order: Order? = null,
+        limit: Int? = null,
+        after: UUID? = null,
+    ): List<QueueEntry> {
         val authentication = authenticationService.getAuthentication()
         val urlString = "$resourceUrl/backfill/$backfillId"
         val response =
@@ -44,6 +50,9 @@ class QueueClient(
                     bearerAuth(authentication.accessToken)
                     accept(ContentType.Application.Json)
                     contentType(ContentType.Application.Json)
+                    order?.let { parameter("order", it) }
+                    limit?.let { parameter("limit", it) }
+                    after?.let { parameter("after", it.toString()) }
                 }
             }
         return response.body()

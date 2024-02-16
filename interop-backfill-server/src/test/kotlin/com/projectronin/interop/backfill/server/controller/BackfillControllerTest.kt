@@ -9,6 +9,7 @@ import com.projectronin.interop.backfill.server.data.model.DiscoveryQueueDO
 import com.projectronin.interop.backfill.server.generated.models.BackfillStatus
 import com.projectronin.interop.backfill.server.generated.models.DiscoveryQueueStatus
 import com.projectronin.interop.backfill.server.generated.models.NewBackfill
+import com.projectronin.interop.backfill.server.generated.models.Order
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
@@ -169,10 +170,10 @@ class BackfillControllerTest {
                 every { status } returns BackfillStatus.COMPLETED
                 every { updatedDateTime } returns OffsetDateTime.of(2023, 9, 1, 0, 0, 0, 0, ZoneOffset.UTC)
             }
-        every { dao.getByTenant(any()) } returns listOf(mockDO)
+        every { dao.getByTenant(any(), any(), any(), any()) } returns listOf(mockDO)
         every { queueDAO.getByBackfillID(any()) } returns listOf(mockQueueDO)
         every { discoveryDAO.getByBackfillID(any()) } returns listOf(mockDiscoveryQueueDO)
-        val result = controller.getBackfills("da tenant")
+        val result = controller.getBackfills("da tenant", Order.ASC, 10, null)
         assertNotNull(result)
         assertEquals(1, result.body?.size)
     }

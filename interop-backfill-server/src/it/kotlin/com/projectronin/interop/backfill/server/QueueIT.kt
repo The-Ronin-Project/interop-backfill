@@ -2,6 +2,7 @@ package com.projectronin.interop.backfill.server
 
 import com.projectronin.interop.backfill.client.generated.models.BackfillStatus
 import com.projectronin.interop.backfill.client.generated.models.NewQueueEntry
+import com.projectronin.interop.backfill.client.generated.models.Order
 import com.projectronin.interop.backfill.client.generated.models.UpdateQueueEntry
 import com.projectronin.interop.backfill.server.data.model.BackfillQueueDO
 import com.projectronin.interop.common.http.exceptions.ClientFailureException
@@ -99,7 +100,7 @@ class QueueIT : BaseBackfillIT() {
         newPatientQueue(id, BackfillStatus.STARTED)
         newPatientQueue(id, BackfillStatus.NOT_STARTED)
 
-        val result = runBlocking { queueClient.getEntriesByBackfillID(id) }
+        val result = runBlocking { queueClient.getEntriesByBackfillID(id, Order.ASC, 10, null) }
 
         assertNotNull(result)
         assertEquals(2, result.size)
@@ -155,7 +156,8 @@ class QueueIT : BaseBackfillIT() {
         val id = newBackFill()
         val entryId = newPatientQueue(id, BackfillStatus.STARTED)
 
-        val result = runBlocking { queueClient.updateQueueEntryByID(entryId, UpdateQueueEntry(BackfillStatus.COMPLETED)) }
+        val result =
+            runBlocking { queueClient.updateQueueEntryByID(entryId, UpdateQueueEntry(BackfillStatus.COMPLETED)) }
 
         val entry = queueDAO.getByID(entryId)!!
         assertTrue(result)
@@ -183,7 +185,8 @@ class QueueIT : BaseBackfillIT() {
                 backfillId = backfillID
                 entryId = UUID.randomUUID()
                 patientId = Random(10).toString()
-                status = com.projectronin.interop.backfill.server.generated.models.BackfillStatus.valueOf(entryStatus.toString())
+                status =
+                    com.projectronin.interop.backfill.server.generated.models.BackfillStatus.valueOf(entryStatus.toString())
             },
         )!!
     }

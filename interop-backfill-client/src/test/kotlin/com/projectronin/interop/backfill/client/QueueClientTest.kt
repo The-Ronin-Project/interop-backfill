@@ -3,6 +3,7 @@ package com.projectronin.interop.backfill.client
 import com.projectronin.interop.backfill.client.generated.models.BackfillStatus
 import com.projectronin.interop.backfill.client.generated.models.GeneratedId
 import com.projectronin.interop.backfill.client.generated.models.NewQueueEntry
+import com.projectronin.interop.backfill.client.generated.models.Order
 import com.projectronin.interop.backfill.client.generated.models.QueueEntry
 import com.projectronin.interop.backfill.client.generated.models.UpdateQueueEntry
 import com.projectronin.interop.backfill.client.spring.BackfillClientConfig
@@ -33,7 +34,8 @@ class QueueClientTest {
                 }
         }
     private val httpClient = HttpSpringConfig().getHttpClient()
-    private val client = QueueClient(httpClient, BackfillClientConfig(Server(hostUrl.toString())), authenticationService)
+    private val client =
+        QueueClient(httpClient, BackfillClientConfig(Server(hostUrl.toString())), authenticationService)
     private val expectedQueueEntry =
         QueueEntry(
             id = UUID.randomUUID(),
@@ -85,12 +87,19 @@ class QueueClientTest {
             runBlocking {
                 client.getEntriesByBackfillID(
                     UUID.fromString("1d531a31-49a9-af74-03d5-573b456efca5"),
+                    Order.DESC,
+                    5,
+                    null,
                 )
             }
         assertEquals(listOf(expectedQueueEntryWithResources, expectedQueueEntryWithOutResources), response)
         val request = mockWebServer.takeRequest()
         assertEquals("GET", request.method)
-        assertEquals(true, request.path?.endsWith("/queue/backfill/1d531a31-49a9-af74-03d5-573b456efca5"))
+        assertEquals(
+            true,
+            request.path?.endsWith("/queue/backfill/1d531a31-49a9-af74-03d5-573b456efca5?order=DESC&limit=5"),
+        )
+        assertEquals(false, request.path?.contains("null"))
         assertEquals("Bearer $authenticationToken", request.getHeader("Authorization"))
     }
 

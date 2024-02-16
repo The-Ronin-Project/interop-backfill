@@ -3,6 +3,7 @@ package com.projectronin.interop.backfill.client
 import com.projectronin.interop.backfill.client.generated.models.Backfill
 import com.projectronin.interop.backfill.client.generated.models.GeneratedId
 import com.projectronin.interop.backfill.client.generated.models.NewBackfill
+import com.projectronin.interop.backfill.client.generated.models.Order
 import com.projectronin.interop.backfill.client.spring.BackfillClientConfig
 import com.projectronin.interop.common.http.auth.InteropAuthenticationService
 import com.projectronin.interop.common.http.request
@@ -48,9 +49,14 @@ class BackfillClient(
     }
 
     /**
-     * Retrieves all [Backfill] objects based on the tenant id
+     * Retrieves a page of [Backfill] objects based on the tenant id
      */
-    suspend fun getBackfills(tenantId: String): List<Backfill> {
+    suspend fun getBackfills(
+        tenantId: String,
+        order: Order? = null,
+        limit: Int? = null,
+        after: UUID? = null,
+    ): List<Backfill> {
         val authentication = authenticationService.getAuthentication()
         val response =
             client.request("BackFill", resourceUrl) { url ->
@@ -59,6 +65,9 @@ class BackfillClient(
                     accept(ContentType.Application.Json)
                     contentType(ContentType.Application.Json)
                     parameter("tenant_id", tenantId)
+                    order?.let { parameter("order", it) }
+                    limit?.let { parameter("limit", it) }
+                    after?.let { parameter("after", it.toString()) }
                 }
             }
         return response.body()

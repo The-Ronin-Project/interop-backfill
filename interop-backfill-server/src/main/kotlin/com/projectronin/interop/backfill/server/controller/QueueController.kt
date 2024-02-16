@@ -8,6 +8,7 @@ import com.projectronin.interop.backfill.server.generated.apis.QueueApi
 import com.projectronin.interop.backfill.server.generated.models.BackfillStatus
 import com.projectronin.interop.backfill.server.generated.models.GeneratedId
 import com.projectronin.interop.backfill.server.generated.models.NewQueueEntry
+import com.projectronin.interop.backfill.server.generated.models.Order
 import com.projectronin.interop.backfill.server.generated.models.QueueEntry
 import com.projectronin.interop.backfill.server.generated.models.UpdateQueueEntry
 import mu.KotlinLogging
@@ -26,8 +27,13 @@ class QueueController(
 
     // GET
     @PreAuthorize("hasAuthority('SCOPE_read:queue')")
-    override fun getEntriesByBackfillID(backfillId: UUID): ResponseEntity<List<QueueEntry>> {
-        val entries = backfillQueueDAO.getByBackfillID(backfillId)
+    override fun getEntriesByBackfillID(
+        backfillId: UUID,
+        order: Order,
+        limit: Int,
+        after: UUID?,
+    ): ResponseEntity<List<QueueEntry>> {
+        val entries = backfillQueueDAO.getByBackfillID(backfillId, order, limit, after)
         val backFill = backfillDAO.getByID(backfillId)!!
         return ResponseEntity.ok(entries.map { it.toModel(backFill) })
     }

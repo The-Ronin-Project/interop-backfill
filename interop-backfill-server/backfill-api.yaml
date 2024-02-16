@@ -48,6 +48,9 @@ paths:
           description: The ID of the tenant for which to return backfills
           schema:
             type: string
+        - $ref: '#/components/parameters/Order'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/After'
       responses:
         '200':
           description: Successfully returned a list of backfill requests.
@@ -247,6 +250,9 @@ paths:
             - get:queue
       parameters:
         - $ref: '#/components/parameters/BackfillId'
+        - $ref: '#/components/parameters/Order'
+        - $ref: '#/components/parameters/Limit'
+        - $ref: '#/components/parameters/After'
       responses:
         '200':
           description: Successfully returned a list of QueueEntries.
@@ -515,6 +521,12 @@ components:
           description: The status of the Discovery queue entry.
       required:
         - status
+    Order:
+      type: string
+      enum:
+        - ASC
+        - DESC
+      default: ASC
   parameters:
     BackfillId:
       name: backfillId
@@ -532,6 +544,27 @@ components:
       name: queueId
       in: path
       required: true
+      schema:
+        $ref: '#/components/schemas/Id'
+    Order:
+      name: order
+      in: query
+      description: The order in which the results are returned.
+      schema:
+        $ref: '#/components/schemas/Order'
+    Limit:
+      name: limit
+      in: query
+      description: The number of elements to retrieve in a single request.
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 50
+        default: 25
+    After:
+      name: after
+      in: query
+      description: The reference ID after which results should be returned.
       schema:
         $ref: '#/components/schemas/Id'
 

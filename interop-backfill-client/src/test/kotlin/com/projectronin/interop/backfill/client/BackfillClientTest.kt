@@ -4,6 +4,7 @@ import com.projectronin.interop.backfill.client.generated.models.Backfill
 import com.projectronin.interop.backfill.client.generated.models.BackfillStatus
 import com.projectronin.interop.backfill.client.generated.models.GeneratedId
 import com.projectronin.interop.backfill.client.generated.models.NewBackfill
+import com.projectronin.interop.backfill.client.generated.models.Order
 import com.projectronin.interop.backfill.client.spring.BackfillClientConfig
 import com.projectronin.interop.backfill.client.spring.Server
 import com.projectronin.interop.common.http.auth.InteropAuthenticationService
@@ -77,17 +78,44 @@ class BackfillClientTest {
                 .setBody(backfillJson)
                 .setHeader("Content-Type", "application/json"),
         )
-
+        val after = "11111111-1111-1111-1111-111111111111"
         val response =
             runBlocking {
                 client.getBackfills(
                     "tenant",
+                    Order.ASC,
+                    10,
+                    UUID.fromString(after),
                 )
             }
         assertEquals(listOf(expectedBackfill), response)
         val request = mockWebServer.takeRequest()
         assertEquals("GET", request.method)
+        assertEquals(true, request.path?.endsWith("/backfill?tenant_id=tenant&order=ASC&limit=10&after=$after"))
+        assertEquals("Bearer $authenticationToken", request.getHeader("Authorization"))
+    }
+
+    @Test
+    fun `getBackfills works with null optional args`() {
+        val backfillJson = JacksonManager.objectMapper.writeValueAsString(listOf(expectedBackfill))
+        mockWebServer.enqueue(
+            MockResponse()
+                .setResponseCode(HttpStatusCode.OK.value)
+                .setBody(backfillJson)
+                .setHeader("Content-Type", "application/json"),
+        )
+
+        val response =
+            runBlocking {
+                client.getBackfills("tenant")
+            }
+        assertEquals(listOf(expectedBackfill), response)
+        val request = mockWebServer.takeRequest()
+        assertEquals("GET", request.method)
         assertEquals(true, request.path?.endsWith("/backfill?tenant_id=tenant"))
+        assertEquals(false, request.path?.contains("order"))
+        assertEquals(false, request.path?.contains("limit"))
+        assertEquals(false, request.path?.contains("after"))
         assertEquals("Bearer $authenticationToken", request.getHeader("Authorization"))
     }
 

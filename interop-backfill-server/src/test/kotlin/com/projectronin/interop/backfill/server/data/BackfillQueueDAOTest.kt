@@ -5,6 +5,7 @@ import com.github.database.rider.core.api.dataset.DataSet
 import com.github.database.rider.core.api.dataset.ExpectedDataSet
 import com.projectronin.interop.backfill.server.data.model.BackfillQueueDO
 import com.projectronin.interop.backfill.server.generated.models.BackfillStatus
+import com.projectronin.interop.backfill.server.generated.models.Order
 import com.projectronin.interop.common.test.database.dbrider.DBRiderConnection
 import com.projectronin.interop.common.test.database.ktorm.KtormHelper
 import com.projectronin.interop.common.test.database.liquibase.LiquibaseTest
@@ -74,6 +75,32 @@ class BackfillQueueDAOTest {
         val dao = BackfillQueueDAO(KtormHelper.database())
         val entry = dao.getByBackfillID(UUID.fromString("b4e8e80a-297a-4b19-bd59-4b8072db9cc4"))
         assertEquals(2, entry.size)
+    }
+
+    @Test
+    @DataSet(value = ["/dbunit/backfillqueue/MultipageQuery.yaml"], cleanAfter = true)
+    fun `getByBackfillID pagination works`() {
+        val dao = BackfillQueueDAO(KtormHelper.database())
+        val backfillId = UUID.fromString("b4e8e80a-297a-4b19-bd59-4b8072db9cc4")
+
+        val firstPage = dao.getByBackfillID(backfillId, Order.ASC, 5, null)
+        assertNotNull(firstPage)
+        assertEquals(5, firstPage.size)
+
+        val firstPageLastId = firstPage.last().entryId
+        val secondPage = dao.getByBackfillID(backfillId, Order.ASC, 5, firstPageLastId)
+        assertNotNull(secondPage)
+        assertEquals(2, secondPage.size)
+
+        val secondPageLastId = secondPage.last().entryId
+        val thirdPage = dao.getByBackfillID(backfillId, Order.ASC, 5, secondPageLastId)
+        assertNotNull(thirdPage)
+        assertEquals(0, thirdPage.size)
+
+        val found = firstPage + secondPage
+        val foundIds = found.map { it.entryId }
+        val foundIdSet = foundIds.toSet()
+        assertEquals(foundIds.size, foundIdSet.size) // ensure there were no duplicates pulled
     }
 
     @Test

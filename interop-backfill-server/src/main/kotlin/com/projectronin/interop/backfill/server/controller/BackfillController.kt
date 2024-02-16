@@ -13,6 +13,7 @@ import com.projectronin.interop.backfill.server.generated.models.BackfillStatus
 import com.projectronin.interop.backfill.server.generated.models.DiscoveryQueueStatus
 import com.projectronin.interop.backfill.server.generated.models.GeneratedId
 import com.projectronin.interop.backfill.server.generated.models.NewBackfill
+import com.projectronin.interop.backfill.server.generated.models.Order
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.access.prepost.PreAuthorize
@@ -33,8 +34,13 @@ class BackfillController(
     }
 
     @PreAuthorize("hasAuthority('SCOPE_read:backfill')")
-    override fun getBackfills(tenantId: String): ResponseEntity<List<Backfill>> {
-        val backFills = backfillDAO.getByTenant(tenantId).filterNot { it.isDeleted }
+    override fun getBackfills(
+        tenantId: String,
+        order: Order,
+        limit: Int,
+        after: UUID?,
+    ): ResponseEntity<List<Backfill>> {
+        val backFills = backfillDAO.getByTenant(tenantId, order, limit, after).filterNot { it.isDeleted }
         return ResponseEntity.ok(backFills.map { it.getBackfillModel() })
     }
 

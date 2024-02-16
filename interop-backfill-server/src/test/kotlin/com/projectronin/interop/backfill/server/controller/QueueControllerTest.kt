@@ -6,6 +6,7 @@ import com.projectronin.interop.backfill.server.data.model.BackfillDO
 import com.projectronin.interop.backfill.server.data.model.BackfillQueueDO
 import com.projectronin.interop.backfill.server.generated.models.BackfillStatus
 import com.projectronin.interop.backfill.server.generated.models.NewQueueEntry
+import com.projectronin.interop.backfill.server.generated.models.Order
 import com.projectronin.interop.backfill.server.generated.models.UpdateQueueEntry
 import io.mockk.every
 import io.mockk.just
@@ -51,9 +52,9 @@ class QueueControllerTest {
                 every { status } returns BackfillStatus.NOT_STARTED
                 every { updatedDateTime } returns OffsetDateTime.now()
             }
-        every { dao.getByBackfillID(backfillID) } returns listOf(mockEntry1, mockEntry2)
+        every { dao.getByBackfillID(backfillID, any(), any(), any()) } returns listOf(mockEntry1, mockEntry2)
         every { backfillDao.getByID(backfillID) } returns mockBackfill
-        val result = controller.getEntriesByBackfillID(backfillID)
+        val result = controller.getEntriesByBackfillID(backfillID, Order.ASC, 10, null)
         assertEquals(HttpStatus.OK, result.statusCode)
         assertEquals(2, result.body?.size)
     }
@@ -335,7 +336,11 @@ class QueueControllerTest {
                 every { status } returns BackfillStatus.NOT_STARTED
                 every { updatedDateTime } returns OffsetDateTime.now()
             }
-        every { dao.getByTenant("tenant", status = BackfillStatus.STARTED) } returns listOf(startedMockEntry1, startedMockEntry2)
+        every { dao.getByTenant("tenant", status = BackfillStatus.STARTED) } returns
+            listOf(
+                startedMockEntry1,
+                startedMockEntry2,
+            )
         every { dao.getByTenant("tenant", status = BackfillStatus.NOT_STARTED) } returns listOf(mockEntry)
         every { backfillDao.getByID(backfillID) } returns mockBackfill
         every { dao.updateStatus(any(), BackfillStatus.STARTED) } just runs
@@ -440,7 +445,11 @@ class QueueControllerTest {
 
         every { dao.getByBackfillID(backfillID) } returns listOf(mockDO)
         every { dao.insert(any()) } returns entryID1 andThen entryID2
-        val result = controller.postQueueEntry(backfillID, listOf(newQueueEntry1, newQueueEntry2, newQueueEntry3, newQueueEntry4))
+        val result =
+            controller.postQueueEntry(
+                backfillID,
+                listOf(newQueueEntry1, newQueueEntry2, newQueueEntry3, newQueueEntry4),
+            )
         assertEquals(HttpStatus.CREATED, result.statusCode)
         assertEquals(2, result.body?.size)
         assertEquals(true, result.body?.any { it.id == entryID1 })

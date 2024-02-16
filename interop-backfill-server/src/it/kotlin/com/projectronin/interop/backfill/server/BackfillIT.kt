@@ -1,6 +1,7 @@
 package com.projectronin.interop.backfill.server
 
 import com.projectronin.interop.backfill.client.generated.models.NewBackfill
+import com.projectronin.interop.backfill.server.generated.models.Order
 import com.projectronin.interop.common.http.exceptions.ClientFailureException
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.Assertions.assertEquals
@@ -27,7 +28,7 @@ class BackfillIT : BaseBackfillIT() {
         val id = runBlocking { backfillClient.postBackfill(backFill) }
 
         assertNotNull(id)
-        val backfill = backfillDAO.getByTenant("tenantId")
+        val backfill = backfillDAO.getByTenant("tenantId", Order.ASC, 10, null)
         assertEquals(1, backfill.size)
         assertEquals(id.id, backfill.first().backfillId)
         val entries = discoveryDAO.getByTenant("tenantId")
@@ -47,7 +48,7 @@ class BackfillIT : BaseBackfillIT() {
         val id = runBlocking { backfillClient.postBackfill(backFill) }
 
         assertNotNull(id)
-        val backfill = backfillDAO.getByTenant("tenantId")
+        val backfill = backfillDAO.getByTenant("tenantId", Order.ASC, 10, null)
         assertEquals(1, backfill.size)
         assertEquals(id.id, backfill.first().backfillId)
         val discoveryEntries = discoveryDAO.getByTenant("tenantId")
@@ -98,7 +99,7 @@ class BackfillIT : BaseBackfillIT() {
         val id = runBlocking { backfillClient.postBackfill(backFill) }
 
         assertNotNull(id)
-        val backfill = backfillDAO.getByTenant("tenantId")
+        val backfill = backfillDAO.getByTenant("tenantId", Order.ASC, 10, null)
         assertEquals(1, backfill.size)
         assertEquals(id.id, backfill.first().backfillId)
         assertEquals("DocumentReference,Patient", backfill.first().allowedResources)
@@ -122,6 +123,16 @@ class BackfillIT : BaseBackfillIT() {
         assertNotNull(backfill)
         assertEquals(id, backfill.id)
         assertFalse(backfill.locationIds.isEmpty())
+    }
+
+    @Test
+    fun `get by tenant works with default request args`() {
+        val id = newBackFill()
+        val backfills = runBlocking { backfillClient.getBackfills("tenantId") }
+        assertNotNull(backfills)
+        assertEquals(1, backfills.size)
+        assertEquals(id, backfills.first().id)
+        assertEquals("tenantId", backfills.first().tenantId)
     }
 
     @Test
