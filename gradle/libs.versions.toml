@@ -9,7 +9,7 @@ interop-kafka = "9.2.1"
 jakarta = "3.0.2"
 # @keep for forcing version
 kotlin = "1.9.22"
-kotlinx-coroutines = "1.7.3"
+kotlinx-coroutines = "1.8.0"
 ktor = "2.3.8"
 ktorm = "3.6.0"
 liquibase = "4.26.0"
