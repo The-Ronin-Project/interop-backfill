@@ -24,41 +24,13 @@ import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.AfterEach
 import org.ktorm.database.Database
 import org.ktorm.dsl.deleteAll
-import org.testcontainers.containers.DockerComposeContainer
-import org.testcontainers.containers.wait.strategy.Wait
-import java.io.File
 import java.time.LocalDate
 import java.util.UUID
 
 abstract class BaseBackfillIT {
-    companion object {
-        val docker =
-            DockerComposeContainer(File(BaseBackfillIT::class.java.getResource("/docker-compose-it.yaml")!!.file))
-                .withExposedService("backfill-server", 8080)
-                .withExposedService("mysql-server", 3306)
-                .withExposedService("mock-oauth2", 8080)
-
-        val start =
-            docker
-                .waitingFor("backfill-server", Wait.forLogMessage(".*Started BackfillServerKt.*", 1))
-                .start()
-    }
-
-    private val serverPort by lazy {
-        docker.getServicePort("backfill-server", 8080)
-    }
-
-    private val dbPort by lazy {
-        docker.getServicePort("mysql-server", 3306)
-    }
-
-    private val mockAuthPort by lazy {
-        docker.getServicePort("mock-oauth2", 8080)
-    }
-
-    protected val serverUrl = "http://localhost:$serverPort"
+    protected val serverUrl = "http://localhost:8080"
     protected val httpClient = HttpSpringConfig().getHttpClient()
-    protected val database = Database.connect(url = "jdbc:mysql://springuser:ThePassword@localhost:$dbPort/backfill-db")
+    protected val database = Database.connect(url = "jdbc:mysql://springuser:ThePassword@localhost:3306/backfill-db")
     protected val backfillDAO = BackfillDAO(database)
     protected val queueDAO = BackfillQueueDAO(database)
     protected val discoveryDAO = DiscoveryQueueDAO(database)
@@ -93,7 +65,7 @@ abstract class BaseBackfillIT {
             httpClient,
             authConfig =
                 AuthenticationConfig(
-                    token = Token("http://localhost:$mockAuthPort/backfill/token"),
+                    token = Token("http://localhost:8081/backfill/token"),
                     audience = "https://interop-backfill.dev.projectronin.io",
                     client =
                         Client(
@@ -103,7 +75,7 @@ abstract class BaseBackfillIT {
                     method = AuthMethod.STANDARD,
                 ),
         )
-    val config = BackfillClientConfig(server = Server("http://localhost:$serverPort"))
+    val config = BackfillClientConfig(server = Server("http://localhost:8080"))
     protected val backfillClient = BackfillClient(httpClient, config, authenticationService)
     protected val discoveryClient = DiscoveryQueueClient(httpClient, config, authenticationService)
     protected val queueClient = QueueClient(httpClient, config, authenticationService)

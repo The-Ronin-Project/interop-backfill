@@ -20,6 +20,13 @@ jobs:
       - name: Install DataDog CI
         run:
           npm install -g @datadog/datadog-ci
+      - name: Set up docker context
+        run:
+          docker context create itrunner
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+        with:
+          endpoint: itrunner
       - name: Install Docker Compose
         run: |
           sudo mkdir -p /etc/apt/keyrings
