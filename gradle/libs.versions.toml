@@ -10,7 +10,7 @@ jakarta = "3.0.2"
 # @keep for forcing version
 kotlin = "1.9.22"
 kotlinx-coroutines = "1.8.0"
-ktor = "2.3.8"
+ktor = "2.3.9"
 ktorm = "3.6.0"
 liquibase = "4.26.0"
 logstash = "7.4"
@@ -23,7 +23,7 @@ ronin-test = "0.2.0"
 spring-boot = "3.2.3"
 spring-kafka = "3.1.2"
 springdoc = "2.3.0"
-testcontainers = "1.19.6"
+testcontainers = "1.19.7"
 
 [libraries]
 interop-common = { module = "com.projectronin.interop:interop-common", version.ref = "interop-common" }
